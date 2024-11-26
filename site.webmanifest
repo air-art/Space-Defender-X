@@ -1,0 +1,25 @@
+{
+    "name": "Space Defender X",
+    "short_name": "Space Defender",
+    "description": "Fast-paced space shooter game with power-ups and high scores",
+    "start_url": "/",
+    "display": "fullscreen",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["games", "entertainment"],
+    "orientation": "landscape"
+}

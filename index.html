@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Defender X</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1 class="game-title">Space Defender X</h1>
+        
+        <div class="game-stats">
+            <div id="score-container">
+                Score: <span id="score">0</span>
+            </div>
+            <div id="health-container">
+                Health: <span id="health">100</span>
+            </div>
+            <div id="level-container">
+                Level: <span id="level">1</span>
+            </div>
+            <div id="powerup-container">
+                Power-up: <span id="powerup-status">None</span>
+            </div>
+        </div>
+
+        <div id="game-area">
+            <div id="spaceship" class="ship">
+                <div class="wing-detail-left"></div>
+                <div class="wing-detail-right"></div>
+                <div class="weapon-mount-left"></div>
+                <div class="weapon-mount-right"></div>
+                <div class="thruster-left"></div>
+                <div class="thruster-right"></div>
+                <div class="engine-left"></div>
+                <div class="engine-right"></div>
+                <div class="engine-glow"></div>
+            </div>
+            
+            <div id="start-screen" class="screen">
+                <h2>Space Defender X</h2>
+                <p>Defend Earth from alien invasion!</p>
+                <div class="controls">
+                    <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+                    <button class="difficulty-btn" data-difficulty="normal">Normal</button>
+                    <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+                </div>
+                <div class="instructions">
+                    <p>← → to move</p>
+                    <p>SPACE to shoot</p>
+                    <p>P to pause</p>
+                </div>
+            </div>
+
+            <div id="pause-screen" class="screen hidden">
+                <h2>PAUSED</h2>
+                <p>Press P to continue</p>
+            </div>
+
+            <div id="game-over-screen" class="screen hidden">
+                <h2>GAME OVER</h2>
+                <p>Final Score: <span id="final-score">0</span></p>
+                <button id="restart-btn">Play Again</button>
+            </div>
+        </div>
+
+        <div class="controls-info">
+            <div class="control-item">
+                <span class="key">←</span>
+                <span class="key">→</span>
+                <span class="desc">Move ship</span>
+            </div>
+            <div class="control-item">
+                <span class="key">SPACE</span>
+                <span class="desc">Shoot</span>
+            </div>
+            <div class="control-item">
+                <span class="key">P</span>
+                <span class="desc">Pause</span>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
