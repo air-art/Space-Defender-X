@@ -19,10 +19,24 @@
 }
 
 body {
-    background: var(--background-color);
-    color: var(--text-color);
-    font-family: 'Press Start 2P', cursive;
-    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+}
+
+.game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 20px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
     overflow: hidden;
 }
 
@@ -115,7 +129,7 @@ body {
     to { transform: translateY(100%); }
 }
 
-#hud {
+.hud {
     position: absolute;
     top: 20px;
     left: 20px;
@@ -123,235 +137,568 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 5px;
     z-index: 1000;
 }
 
-.hud-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.score-container {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
 }
 
-.hud-label {
-    font-size: 1.2em;
-    color: var(--primary-color);
-    text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
-}
-
-.hud-value {
-    font-size: 1.5em;
-    color: var(--text-color);
+.score {
+    color: #fff;
+    font-size: 24px;
     font-weight: bold;
+    text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
 }
 
-#score-container, #health-container {
-    font-family: 'Press Start 2P', cursive;
-    color: #00ff00;
-    padding: 10px;
-    font-size: 20px;
+.wave-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 15px;
+    color: #fff;
+    font-size: 18px;
+    backdrop-filter: blur(5px);
 }
 
-#coins-display {
-    color: var(--gold-color);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.coin-icon {
-    width: 20px;
-    height: 20px;
-    background: var(--gold-color);
-    border-radius: 50%;
-    animation: spin 2s linear infinite;
-}
-
-/* Advanced Ship Styling */
-.ship {
+.game-background {
     position: absolute;
-    width: 50px;
-    height: 70px;
-    transform-origin: center;
-    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%),
+        linear-gradient(to bottom, #0a192f 0%, #20232a 100%);
+    overflow: hidden;
 }
 
-/* Ship Body */
-.ship::before {
-    content: '';
+.stars {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
-    clip-path: polygon(
-        50% 0%,     /* Top point */
-        85% 30%,    /* Right wing top */
-        100% 50%,   /* Right wing tip */
-        85% 70%,    /* Right wing bottom */
-        70% 75%,    /* Right engine mount */
-        60% 100%,   /* Right engine */
-        40% 100%,   /* Left engine */
-        30% 75%,    /* Left engine mount */
-        15% 70%,    /* Left wing bottom */
-        0% 50%,     /* Left wing tip */
-        15% 30%     /* Left wing top */
-    );
-    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+    background-repeat: repeat;
+    animation: stars-scroll 20s linear infinite;
 }
 
-/* Cockpit */
-.ship::after {
+@keyframes stars-scroll {
+    from { background-position: 0 0; }
+    to { background-position: 0 600px; }
+}
+
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.control-key {
+    color: #fff;
+    font-size: 16px;
+    padding: 8px 15px;
+    background: rgba(33, 150, 243, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 48px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(33, 150, 243, 0.8);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.message.visible {
+    opacity: 1;
+}
+
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.game-over.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.game-over h1 {
+    color: #fff;
+    font-size: 64px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(33, 150, 243, 0.8);
+}
+
+.game-over .final-score {
+    color: #2196F3;
+    font-size: 36px;
+    margin-bottom: 30px;
+}
+
+.restart-button {
+    padding: 15px 30px;
+    font-size: 24px;
+    color: #fff;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.restart-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+}
+
+.power-up {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #FFD700, #FFA500);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    animation: power-up-float 2s ease-in-out infinite;
+}
+
+@keyframes power-up-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Base Player Ship */
+.player-ship {
+    position: absolute;
+    width: 60px;
+    height: 90px;
+    transition: transform 0.3s;
+}
+
+.player-ship::before,
+.player-ship::after,
+.player-ship .wing-left,
+.player-ship .wing-right,
+.player-ship .cockpit,
+.player-ship .engine,
+.player-ship .tail-fin {
     content: '';
     position: absolute;
-    width: 20px;
-    height: 25px;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 50%, #3498db 100%);
-    clip-path: polygon(50% 0%, 100% 40%, 80% 100%, 20% 100%, 0% 40%);
-    animation: cockpitGlow 2s infinite alternate;
+    pointer-events: none;
 }
 
-/* Wing Details */
-.wing-detail-left, .wing-detail-right {
+/* Wing Base Styles */
+.wing-left, .wing-right {
     position: absolute;
+    width: 40px;
+    height: 15px;
+    background: #1976D2;
+    top: 40%;
+    transition: all 0.3s ease-out;
+    transform-origin: center center;
+}
+
+.wing-left {
+    left: -40px;
+    transform: skewY(-15deg);
+}
+
+.wing-right {
+    right: -40px;
+    transform: skewY(15deg);
+}
+
+/* Wing Movement States */
+.player-ship.moving-left {
+    transform: rotate(-15deg) translateX(-10px);
+}
+
+.player-ship.moving-left .wing-left {
+    transform: skewY(-30deg) translateY(5px) scaleX(1.2);
+}
+
+.player-ship.moving-left .wing-right {
+    transform: skewY(0deg) translateY(-5px) scaleX(0.8);
+}
+
+.player-ship.moving-right {
+    transform: rotate(15deg) translateX(10px);
+}
+
+.player-ship.moving-right .wing-left {
+    transform: skewY(0deg) translateY(-5px) scaleX(0.8);
+}
+
+.player-ship.moving-right .wing-right {
+    transform: skewY(30deg) translateY(5px) scaleX(1.2);
+}
+
+/* Wave-specific Wing Styles */
+.ship-wave-1 .wing-left,
+.ship-wave-1 .wing-right {
+    background: linear-gradient(to bottom, #2196F3, #1976D2);
+    height: 12px;
+}
+
+.ship-wave-2 .wing-left,
+.ship-wave-2 .wing-right {
+    background: linear-gradient(to bottom, #2196F3, #1976D2);
+    height: 15px;
+    width: 45px;
+}
+
+.ship-wave-3 .wing-left,
+.ship-wave-3 .wing-right {
+    background: linear-gradient(to bottom, #1976D2, #0D47A1);
+    height: 18px;
+    width: 50px;
+}
+
+.ship-wave-4 .wing-left,
+.ship-wave-4 .wing-right {
+    background: linear-gradient(to bottom, #1565C0, #0D47A1);
+    height: 22px;
+    width: 60px;
+}
+
+/* Wing Extension Animation */
+@keyframes extendWings {
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+    100% {
+        width: 40px;
+        opacity: 1;
+    }
+}
+
+.wing-left, .wing-right {
+    animation: extendWings 0.5s ease-out forwards;
+}
+
+/* Wave-specific animations */
+.ship-wave-2 .wing-left,
+.ship-wave-2 .wing-right {
+    animation: extendWings 0.6s ease-out forwards;
+}
+
+.ship-wave-3 .wing-left,
+.ship-wave-3 .wing-right {
+    animation: extendWings 0.7s ease-out forwards;
+}
+
+.ship-wave-4 .wing-left,
+.ship-wave-4 .wing-right {
+    animation: extendWings 0.8s ease-out forwards;
+}
+
+/* Wave 1 Ship - Basic Fighter Jet */
+.ship-wave-1 {
+    background: linear-gradient(to bottom, #2196F3 60%, #1976D2);
+    clip-path: polygon(50% 0%, 90% 80%, 70% 100%, 30% 100%, 10% 80%);
+    box-shadow: 0 0 15px #2196F3;
+}
+
+.ship-wave-1::before { /* Main Wings */
+    content: '';
+    position: absolute;
+    left: -40px;
+    right: -40px;
+    top: 50%;
+    height: 12px;
+    background: #64B5F6;
+    clip-path: polygon(0 0, 20% 0, 45% 100%, 55% 100%, 80% 0, 100% 0, 85% 100%, 15% 100%);
+    box-shadow: 0 0 10px #64B5F6;
+}
+
+.ship-wave-1::after { /* Cockpit */
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 15%;
+    width: 20px;
+    height: 30px;
+    background: linear-gradient(135deg, #BBDEFB 20%, #90CAF9 40%, #64B5F6 60%);
+    transform: translateX(-50%);
+    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.5);
+}
+
+.ship-wave-1 .tail-fin {
+    position: absolute;
+    left: 50%;
+    top: 60%;
     width: 15px;
     height: 25px;
-    top: 40%;
-    background: #95a5a6;
-}
-
-.wing-detail-left {
-    left: 2px;
-    transform: skew(-20deg);
-}
-
-.wing-detail-right {
-    right: 2px;
-    transform: skew(20deg);
-}
-
-/* Engine Effects */
-.engine-left, .engine-right {
-    position: absolute;
-    bottom: -10px;
-    width: 10px;
-    height: 20px;
-    background: linear-gradient(to bottom, 
-        rgba(231, 76, 60, 1) 0%,
-        rgba(231, 76, 60, 0.8) 40%,
-        rgba(231, 76, 60, 0.4) 80%,
-        transparent 100%
-    );
-    filter: blur(2px);
-    animation: enginePulse 0.2s infinite alternate;
-}
-
-.engine-left {
-    left: 12px;
-}
-
-.engine-right {
-    right: 12px;
-}
-
-/* Engine Glow */
-.engine-glow {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
+    background: #1976D2;
     transform: translateX(-50%);
-    width: 30px;
-    height: 15px;
-    background: radial-gradient(
-        circle at center,
-        rgba(231, 76, 60, 0.8) 0%,
-        rgba(231, 76, 60, 0.4) 50%,
-        transparent 100%
-    );
-    filter: blur(4px);
-    animation: engineGlow 1s infinite alternate;
+    clip-path: polygon(0 30%, 50% 0, 100% 30%, 50% 100%);
 }
 
-/* Side Thrusters */
-.thruster-left, .thruster-right {
+.ship-wave-1 .engine {
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    width: 24px;
+    height: 15px;
+    background: #FF9800;
+    transform: translateX(-50%);
+    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+    animation: engineFlame 0.5s infinite alternate;
+}
+
+/* Wave 2 Ship - Advanced Fighter Jet */
+.ship-wave-2 {
+    background: linear-gradient(to bottom, #2196F3 60%, #1976D2);
+    clip-path: polygon(50% 0%, 95% 70%, 80% 100%, 20% 100%, 5% 70%);
+    box-shadow: 0 0 20px #2196F3;
+}
+
+.ship-wave-2::before { /* Enhanced Wings */
+    content: '';
+    position: absolute;
+    left: -50px;
+    right: -50px;
+    top: 45%;
+    height: 15px;
+    background: #64B5F6;
+    clip-path: polygon(0 0, 25% 0, 45% 100%, 55% 100%, 75% 0, 100% 0, 90% 100%, 10% 100%);
+    box-shadow: 0 0 15px #64B5F6;
+}
+
+.ship-wave-2::after { /* Advanced Cockpit */
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 10%;
+    width: 25px;
+    height: 35px;
+    background: linear-gradient(135deg, #BBDEFB 20%, #90CAF9 40%, #64B5F6 60%);
+    transform: translateX(-50%);
+    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+    box-shadow: inset 0 0 15px rgba(255,255,255,0.6);
+}
+
+.ship-wave-2 .tail-fin {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    width: 20px;
+    height: 35px;
+    background: #1976D2;
+    transform: translateX(-50%);
+    clip-path: polygon(0 40%, 50% 0, 100% 40%, 50% 100%);
+}
+
+.ship-wave-2 .engine {
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 30px;
+    height: 20px;
+    background: linear-gradient(to bottom, #FF9800, #F57C00);
+    transform: translateX(-50%);
+    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+    animation: engineFlame 0.4s infinite alternate;
+}
+
+/* Wave 3 Ship - Stealth Fighter */
+.ship-wave-3 {
+    background: linear-gradient(to bottom, #1976D2 60%, #0D47A1);
+    clip-path: polygon(50% 0%, 100% 60%, 90% 100%, 10% 100%, 0% 60%);
+    box-shadow: 0 0 25px #1976D2;
+}
+
+.ship-wave-3::before { /* Stealth Wings */
+    content: '';
+    position: absolute;
+    left: -60px;
+    right: -60px;
+    top: 40%;
+    height: 18px;
+    background: linear-gradient(to bottom, #64B5F6, #1976D2);
+    clip-path: polygon(0 0, 30% 0, 45% 100%, 55% 100%, 70% 0, 100% 0, 95% 100%, 5% 100%);
+    box-shadow: 0 0 20px #64B5F6;
+}
+
+.ship-wave-3::after { /* Stealth Cockpit */
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 8%;
+    width: 30px;
+    height: 40px;
+    background: linear-gradient(135deg, #90CAF9 20%, #64B5F6 40%, #42A5F5 60%);
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.7);
+}
+
+.ship-wave-3 .tail-fin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 25px;
+    height: 45px;
+    background: #0D47A1;
+    transform: translateX(-50%);
+    clip-path: polygon(0 50%, 50% 0, 100% 50%, 50% 100%);
+}
+
+.ship-wave-3 .engine {
+    position: absolute;
+    left: 50%;
+    bottom: -10px;
+    width: 40px;
+    height: 25px;
+    background: linear-gradient(to bottom, #FF9800, #F57C00, #FF5722);
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+    animation: engineFlame 0.3s infinite alternate;
+}
+
+/* Wave 4 Ship - Advanced Stealth Fighter */
+.ship-wave-4 {
+    background: linear-gradient(to bottom, #1565C0 60%, #0D47A1);
+    clip-path: polygon(50% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
+    box-shadow: 0 0 30px #1565C0;
+}
+
+.ship-wave-4::before { /* Advanced Wings */
+    content: '';
+    position: absolute;
+    left: -70px;
+    right: -70px;
+    top: 35%;
+    height: 22px;
+    background: linear-gradient(to bottom, #42A5F5, #1976D2);
+    clip-path: polygon(0 0, 35% 0, 45% 100%, 55% 100%, 65% 0, 100% 0, 100% 100%, 0 100%);
+    box-shadow: 0 0 25px #42A5F5;
+}
+
+.ship-wave-4::after { /* Advanced Cockpit */
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 5%;
+    width: 35px;
+    height: 45px;
+    background: linear-gradient(135deg, #90CAF9 20%, #64B5F6 40%, #2196F3 60%);
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+    box-shadow: inset 0 0 25px rgba(255,255,255,0.8);
+}
+
+.ship-wave-4 .tail-fin {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: 30px;
+    height: 55px;
+    background: #0D47A1;
+    transform: translateX(-50%);
+    clip-path: polygon(0 60%, 50% 0, 100% 60%, 50% 100%);
+}
+
+.ship-wave-4 .engine {
+    position: absolute;
+    left: 50%;
+    bottom: -12px;
+    width: 50px;
+    height: 30px;
+    background: linear-gradient(to bottom, #FF9800, #F57C00, #FF5722, #F44336);
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+    animation: engineFlame 0.2s infinite alternate;
+}
+
+/* Ship Animations */
+@keyframes engineFlame {
+    from {
+        height: 100%;
+        opacity: 0.7;
+        background: linear-gradient(to bottom, #FF9800, #F57C00, #FF5722);
+    }
+    to {
+        height: 150%;
+        opacity: 0.9;
+        background: linear-gradient(to bottom, #FF9800, #FF5722, #F44336);
+    }
+}
+
+/* Movement States */
+.player-ship.moving-left {
+    transform: rotate(-15deg) translateX(-10px);
+}
+
+.player-ship.moving-right {
+    transform: rotate(15deg) translateX(10px);
+}
+
+/* Projectile Styling */
+.projectile {
     position: absolute;
     width: 4px;
-    height: 8px;
-    bottom: 20px;
-    background: #7f8c8d;
+    height: 15px;
     border-radius: 2px;
 }
 
-.thruster-left {
-    left: 0;
-    transform: rotate(-45deg);
+.projectile-wave-1 {
+    background: #2196F3;
+    box-shadow: 0 0 5px #2196F3;
 }
 
-.thruster-right {
-    right: 0;
-    transform: rotate(45deg);
+.projectile-wave-2 {
+    background: #64B5F6;
+    box-shadow: 0 0 8px #64B5F6;
+    height: 20px;
 }
 
-/* Weapon Mounts */
-.weapon-mount-left, .weapon-mount-right {
-    position: absolute;
+.projectile-wave-3 {
+    background: #90CAF9;
+    box-shadow: 0 0 12px #90CAF9;
+    height: 25px;
     width: 6px;
-    height: 12px;
-    top: 60%;
-    background: #95a5a6;
-    border-radius: 1px;
 }
 
-.weapon-mount-left {
-    left: 5px;
-}
-
-.weapon-mount-right {
-    right: 5px;
-}
-
-@keyframes cockpitGlow {
-    from { opacity: 0.7; }
-    to { opacity: 1; }
-}
-
-@keyframes enginePulse {
-    from { 
-        height: 20px;
-        opacity: 0.8;
-    }
-    to { 
-        height: 25px;
-        opacity: 0.4;
-    }
-}
-
-@keyframes engineGlow {
-    from { opacity: 0.7; transform: translateX(-50%) scale(1); }
-    to { opacity: 0.9; transform: translateX(-50%) scale(1.2); }
-}
-
-/* Movement Effects */
-.ship.moving-left::after {
-    transform: translateX(-50%) rotate(-5deg);
-}
-
-.ship.moving-right::after {
-    transform: translateX(-50%) rotate(5deg);
-}
-
-.ship.moving-left .engine-right {
-    height: 25px;
-    opacity: 0.9;
-}
-
-.ship.moving-right .engine-left {
-    height: 25px;
-    opacity: 0.9;
+.projectile-wave-4 {
+    background: #BBDEFB;
+    box-shadow: 0 0 15px #BBDEFB;
+    height: 30px;
+    width: 8px;
 }
 
 .screen {
@@ -697,12 +1044,12 @@ body {
 
 .explosion {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    background: radial-gradient(circle, var(--secondary-color), transparent);
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #e74c3c, transparent);
     border-radius: 50%;
     animation: explode 0.5s forwards;
-    z-index: 150;
+    opacity: 1;
 }
 
 /* Difficulty Selection */
@@ -815,139 +1162,263 @@ button:hover {
 .alien {
     position: absolute;
     width: 60px;
-    height: 45px;
-    transform-origin: center;
-    z-index: 900;
+    height: 40px;
+    transition: transform 0.3s;
 }
 
-/* Alien Ship Body */
-.alien::before {
+.alien::before,
+.alien::after,
+.alien .cockpit,
+.alien .beam {
     content: '';
     position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 50%, #8e44ad 100%);
-    clip-path: polygon(
-        20% 0%,    /* Left top edge */
-        80% 0%,    /* Right top edge */
-        100% 30%,  /* Right wing tip */
-        90% 60%,   /* Right wing back */
-        60% 100%,  /* Right bottom */
-        40% 100%,  /* Left bottom */
-        10% 60%,   /* Left wing back */
-        0% 30%     /* Left wing tip */
-    );
-    box-shadow: 0 0 20px rgba(142, 68, 173, 0.6);
-    animation: alienHover 2s infinite alternate ease-in-out;
-}
-
-/* Alien Ship Core */
-.alien::after {
-    content: '';
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle at center, 
-        rgba(41, 128, 185, 0.9),
-        rgba(41, 128, 185, 0.6) 60%,
-        transparent 100%
-    );
-    border-radius: 50%;
-    animation: alienCore 1.5s infinite alternate;
-}
-
-/* Energy Beam */
-.alien-beam {
-    position: absolute;
-    width: 4px;
-    height: 20px;
-    bottom: -20px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(to bottom,
-        rgba(41, 128, 185, 0.8),
-        rgba(41, 128, 185, 0.4) 60%,
-        transparent 100%
-    );
-    filter: blur(1px);
-    animation: beamPulse 0.5s infinite alternate;
 }
 
-/* Side Engines */
-.alien-engine-left, .alien-engine-right {
-    position: absolute;
-    width: 8px;
-    height: 12px;
-    bottom: 10px;
-    background: linear-gradient(to bottom,
-        rgba(231, 76, 60, 0.8),
-        rgba(231, 76, 60, 0.4) 60%,
-        transparent 100%
-    );
-    filter: blur(1px);
-    animation: engineGlow 0.3s infinite alternate;
-}
-
-.alien-engine-left {
-    left: 12px;
-    transform: rotate(-30deg);
-}
-
-.alien-engine-right {
-    right: 12px;
-    transform: rotate(30deg);
-}
-
-/* Wing Lights */
-.alien-light-1, .alien-light-2, .alien-light-3 {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: #e74c3c;
+/* Wave 1 Alien - Classic UFO */
+.alien-wave-1 {
+    background: linear-gradient(to bottom, #4CAF50 50%, #2E7D32);
     border-radius: 50%;
-    animation: lightPulse 0.8s infinite alternate;
+    height: 25px;
+    box-shadow: 0 0 15px #4CAF50;
 }
 
-.alien-light-1 { top: 10px; left: 15px; animation-delay: 0s; }
-.alien-light-2 { top: 10px; right: 15px; animation-delay: 0.2s; }
-.alien-light-3 { bottom: 10px; left: 50%; transform: translateX(-50%); animation-delay: 0.4s; }
+.alien-wave-1::before {
+    content: '';
+    top: -10px;
+    width: 30px;
+    height: 15px;
+    background: #81C784;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 10px #81C784;
+}
+
+.alien-wave-1::after {
+    content: '';
+    bottom: -2px;
+    width: 40px;
+    height: 4px;
+    background: #A5D6A7;
+    border-radius: 2px;
+    box-shadow: 0 0 8px #A5D6A7;
+}
+
+.alien-wave-1 .beam {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 10px;
+    background: linear-gradient(to bottom, rgba(129, 199, 132, 0.6), transparent);
+}
+
+/* Wave 2 Alien - Advanced UFO */
+.alien-wave-2 {
+    background: linear-gradient(to bottom, #FFC107 50%, #FFA000);
+    border-radius: 50%;
+    height: 30px;
+    box-shadow: 0 0 20px #FFC107;
+}
+
+.alien-wave-2::before {
+    content: '';
+    top: -8px;
+    width: 40px;
+    height: 16px;
+    background: #FFD54F;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 12px #FFD54F;
+}
+
+.alien-wave-2::after {
+    content: '';
+    bottom: -3px;
+    width: 50px;
+    height: 6px;
+    background: #FFE082;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #FFE082;
+    animation: enginePulse 1s infinite alternate;
+}
+
+/* Wave 3 Alien - Military UFO */
+.alien-wave-3 {
+    background: linear-gradient(to bottom, #FF5722 50%, #E64A19);
+    border-radius: 50%;
+    height: 35px;
+    box-shadow: 0 0 25px #FF5722;
+    transform-style: preserve-3d;
+    animation: hover 2s infinite alternate;
+}
+
+.alien-wave-3::before {
+    content: '';
+    top: -6px;
+    width: 45px;
+    height: 18px;
+    background: #FF8A65;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 15px #FF8A65;
+}
+
+.alien-wave-3::after {
+    content: '';
+    bottom: -4px;
+    width: 55px;
+    height: 8px;
+    background: #FFAB91;
+    border-radius: 4px;
+    box-shadow: 0 0 12px #FFAB91;
+    animation: enginePulse 0.8s infinite alternate;
+}
+
+/* Wave 4 Alien - Elite UFO */
+.alien-wave-4 {
+    background: linear-gradient(to bottom, #9C27B0 50%, #7B1FA2);
+    border-radius: 50%;
+    height: 40px;
+    box-shadow: 0 0 30px #9C27B0;
+    animation: advancedHover 2s infinite alternate;
+}
+
+.alien-wave-4::before {
+    content: '';
+    top: -5px;
+    width: 50px;
+    height: 20px;
+    background: #BA68C8;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 20px #BA68C8;
+    animation: topPulse 1.5s infinite alternate;
+}
+
+.alien-wave-4::after {
+    content: '';
+    bottom: -5px;
+    width: 60px;
+    height: 10px;
+    background: #CE93D8;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #CE93D8;
+    animation: enginePulse 0.6s infinite alternate;
+}
+
+/* Boss Alien - Mothership */
+.alien.boss-alien {
+    width: 120px;
+    height: 60px;
+    background: linear-gradient(to bottom, #f44336 50%, #d32f2f);
+    border-radius: 50%;
+    box-shadow: 0 0 40px #f44336;
+    animation: mothership 3s infinite alternate;
+}
+
+.alien.boss-alien::before {
+    content: '';
+    top: -10px;
+    width: 80px;
+    height: 30px;
+    background: #EF5350;
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 25px #EF5350;
+    animation: bossTopPulse 2s infinite alternate;
+}
+
+.alien.boss-alien::after {
+    content: '';
+    bottom: -6px;
+    width: 100px;
+    height: 12px;
+    background: #E57373;
+    border-radius: 6px;
+    box-shadow: 0 0 20px #E57373;
+    animation: bossEnginePulse 0.5s infinite alternate;
+}
 
 /* Animations */
-@keyframes alienHover {
+@keyframes enginePulse {
+    from { opacity: 0.6; transform: translateX(-50%) scaleX(0.8); }
+    to { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
+}
+
+@keyframes topPulse {
+    from { transform: translateX(-50%) scaleY(0.9); }
+    to { transform: translateX(-50%) scaleY(1.1); }
+}
+
+@keyframes hover {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+@keyframes advancedHover {
+    from { transform: translateY(0) rotate(0deg); }
+    to { transform: translateY(-10px) rotate(5deg); }
+}
+
+@keyframes mothership {
     0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(-5px) rotate(2deg); }
+    33% { transform: translateY(-15px) rotate(-2deg); }
+    66% { transform: translateY(-10px) rotate(2deg); }
+    100% { transform: translateY(-5px) rotate(-1deg); }
 }
 
-@keyframes alienCore {
-    0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.9); }
-    100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+@keyframes bossTopPulse {
+    from { transform: translateX(-50%) scaleX(0.9); }
+    to { transform: translateX(-50%) scaleX(1.1); }
 }
 
-@keyframes beamPulse {
-    0% { height: 15px; opacity: 0.6; }
-    100% { height: 25px; opacity: 0.3; }
+@keyframes bossEnginePulse {
+    from { opacity: 0.7; transform: translateX(-50%) scaleX(0.9); }
+    to { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
 }
 
-@keyframes engineGlow {
-    0% { opacity: 0.6; height: 10px; }
-    100% { opacity: 0.9; height: 15px; }
+/* Hit Effect */
+.alien.hit {
+    filter: brightness(2);
+    transform: scale(1.1);
 }
 
-@keyframes lightPulse {
-    0% { transform: scale(0.8); opacity: 0.6; box-shadow: 0 0 5px #e74c3c; }
-    100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 10px #e74c3c; }
+/* Explosions */
+.explosion {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    animation: explode 0.5s forwards;
+    background: radial-gradient(circle, 
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 193, 7, 1) 30%,
+        rgba(255, 87, 34, 0.8) 60%,
+        transparent 100%
+    );
 }
 
-/* Alien movement states */
-.alien.moving-left {
-    transform: rotate(-10deg);
+.boss-explosion {
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, 
+        rgba(255, 255, 255, 1) 0%,
+        rgba(244, 67, 54, 1) 30%,
+        rgba(255, 152, 0, 0.8) 60%,
+        transparent 100%
+    );
 }
 
-.alien.moving-right {
-    transform: rotate(10deg);
+@keyframes explode {
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
 }
 
 /* Projectile Styling */
@@ -1021,4 +1492,78 @@ button:hover {
 @keyframes powerUpPulse {
     0% { transform: scale(1); }
     100% { transform: scale(1.2); }
+}
+
+.wave-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    padding: 20px 40px;
+    border-radius: 10px;
+    font-size: 48px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    z-index: 1000;
+    animation: waveNotification 3s ease-in-out;
+    border: 2px solid #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    text-shadow: 0 0 10px #00ff00;
+}
+
+@keyframes waveNotification {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(3) rotate(-10deg);
+        filter: blur(10px);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2) rotate(5deg);
+        filter: blur(0);
+    }
+    25% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    }
+    85% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+        filter: blur(5px);
+    }
+}
+
+.wave-notification.boss-wave {
+    color: #ff0000;
+    border-color: #ff0000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    text-shadow: 0 0 10px #ff0000;
+    animation: waveNotification 3s ease-in-out, glitch 0.3s infinite;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(-50%, -50%) skew(0deg);
+    }
+    20% {
+        transform: translate(-52%, -50%) skew(4deg);
+    }
+    40% {
+        transform: translate(-48%, -50%) skew(-4deg);
+    }
+    60% {
+        transform: translate(-50%, -52%) skew(2deg);
+    }
+    80% {
+        transform: translate(-50%, -48%) skew(-2deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) skew(0deg);
+    }
 }
