@@ -171,13 +171,11 @@ body {
 
 /* Advanced Ship Styling */
 .ship {
-    width: 40px;
-    height: 50px;
-    background: #fff;
     position: absolute;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    transition: all 0.3s ease;
-    z-index: 100;
+    width: 50px;
+    height: 70px;
+    transform-origin: center;
+    z-index: 1000;
 }
 
 /* Ship Body */
@@ -687,18 +685,24 @@ body {
 }
 
 @keyframes explode {
-    0% { transform: scale(0.5); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
+    0% { 
+        transform: scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
 }
 
 .explosion {
     position: absolute;
-    width: 40px;
-    height: 40px;
-    background: radial-gradient(circle, #e74c3c, transparent);
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle, var(--secondary-color), transparent);
     border-radius: 50%;
     animation: explode 0.5s forwards;
-    opacity: 1;
+    z-index: 150;
 }
 
 /* Difficulty Selection */
@@ -809,13 +813,11 @@ button:hover {
 
 /* Alien Ship Styling */
 .alien {
-    width: 40px;
-    height: 40px;
-    background: #ff0000;
     position: absolute;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    transform: rotate(180deg);
-    z-index: 50;
+    width: 60px;
+    height: 45px;
+    transform-origin: center;
+    z-index: 900;
 }
 
 /* Alien Ship Body */
@@ -950,898 +952,73 @@ button:hover {
 
 /* Projectile Styling */
 .projectile {
+    position: absolute;
     width: 4px;
-    height: 10px;
-    background: #fff;
-    position: absolute;
-    border-radius: 50%;
-    z-index: 75;
-}
-
-.alien-projectile {
-    width: 4px;
-    height: 10px;
-    background: #ff0000;
-    position: absolute;
-    border-radius: 50%;
-    z-index: 75;
-}
-
-.boss {
-    width: 80px;
-    height: 80px;
-    background: #ff4500;
-    box-shadow: 0 0 20px #ff4500;
-}
-
-/* Wave Transition */
-.wave-transition {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* Ship Upgrades */
-#spaceship {
-    transition: all 0.3s ease-in-out;
-}
-
-#spaceship.wave2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-#spaceship.wave3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-#spaceship.wave4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-#spaceship.wave5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile.wave2 { background: #4169e1; box-shadow: 0 0 10px #4169e1; height: 15px; }
-.projectile.wave3 { background: #ffd700; box-shadow: 0 0 15px #ffd700; width: 8px; height: 16px; }
-.projectile.wave4 { background: #32cd32; box-shadow: 0 0 20px #32cd32; width: 10px; height: 20px; }
-.projectile.wave5 { background: #ff0000; box-shadow: 0 0 25px #ff0000; width: 12px; height: 24px; }
-
-.ship-wing {
-    position: absolute;
-    width: 15px;
-    height: 25px;
-    background: inherit;
-    transition: all 0.3s ease-in-out;
-}
-
-.ship-wing.left { left: -12px; top: 50%; transform: skew(-20deg); }
-.ship-wing.right { right: -12px; top: 50%; transform: skew(20deg); }
-
-.engine-flame {
-    position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 20px;
-    background: linear-gradient(to bottom, #f1c40f, #e67e22, transparent);
-    border-radius: 0 0 5px 5px;
-    animation: flameFlicker 0.3s infinite alternate;
-}
-
-@keyframes flameFlicker {
-    0% { height: 20px; opacity: 0.8; }
-    100% { height: 25px; opacity: 1; }
-}
-
-/* Ship Upgrade Styles */
-.ship {
-    width: 50px;
-    height: 50px;
-    background: #fff;
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: all 0.3s ease;
-}
-
-.ship-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-.ship-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-.ship-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-.ship-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile {
-    width: 6px;
-    height: 12px;
-    background: #fff;
-    position: absolute;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
-
-.projectile-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 10px #4169e1;
-}
-
-.projectile-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 15px #ffd700;
-    width: 8px;
-    height: 16px;
-}
-
-.projectile-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 20px #32cd32;
-    width: 10px;
-    height: 20px;
-}
-
-.projectile-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 25px #ff0000;
-    width: 12px;
-    height: 24px;
-}
-
-.upgrade-announcement {
-    color: #ffd700;
-    font-size: 24px;
-    text-shadow: 0 0 10px #ffd700;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* Alien Upgrades */
-.alien.faster {
-    filter: hue-rotate(120deg) brightness(1.2);
-}
-
-.alien.armored {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 50%, #95a5a6 100%);
-    box-shadow: 0 0 20px rgba(149, 165, 166, 0.8);
-}
-
-.alien.zigzag {
-    filter: hue-rotate(240deg) brightness(1.2);
-}
-
-.alien.shooter {
-    filter: hue-rotate(300deg) brightness(1.3);
-}
-
-.alien-weapon {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
     height: 15px;
-    background: #e74c3c;
+    background: linear-gradient(to bottom, #f1c40f, #f39c12);
     border-radius: 2px;
-    box-shadow: 0 0 10px #c0392b;
+    box-shadow: 0 0 8px #f1c40f;
 }
 
-.alien-projectile {
+/* Power-up Styling */
+.power-up {
     position: absolute;
-    width: 4px;
-    height: 12px;
-    background: linear-gradient(to bottom, #e74c3c, #c0392b);
-    border-radius: 2px;
-    box-shadow: 0 0 8px #e74c3c;
-    z-index: 100;
-}
-
-/* Wave Transition */
-.wave-transition {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* Ship Upgrades */
-#spaceship {
-    transition: all 0.3s ease-in-out;
-}
-
-#spaceship.wave2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-#spaceship.wave3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-#spaceship.wave4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-#spaceship.wave5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile.wave2 { background: #4169e1; box-shadow: 0 0 10px #4169e1; height: 15px; }
-.projectile.wave3 { background: #ffd700; box-shadow: 0 0 15px #ffd700; width: 8px; height: 16px; }
-.projectile.wave4 { background: #32cd32; box-shadow: 0 0 20px #32cd32; width: 10px; height: 20px; }
-.projectile.wave5 { background: #ff0000; box-shadow: 0 0 25px #ff0000; width: 12px; height: 24px; }
-
-.ship-wing {
-    position: absolute;
-    width: 15px;
+    width: 25px;
     height: 25px;
-    background: inherit;
-    transition: all 0.3s ease-in-out;
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(155, 89, 182, 0.8);
+    animation: powerUpFloat 2s infinite alternate;
 }
 
-.ship-wing.left { left: -12px; top: 50%; transform: skew(-20deg); }
-.ship-wing.right { right: -12px; top: 50%; transform: skew(20deg); }
+@keyframes powerUpFloat {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
 
-.engine-flame {
+/* Explosion Animation */
+.explosion {
     position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 20px;
-    background: linear-gradient(to bottom, #f1c40f, #e67e22, transparent);
-    border-radius: 0 0 5px 5px;
-    animation: flameFlicker 0.3s infinite alternate;
-}
-
-@keyframes flameFlicker {
-    0% { height: 20px; opacity: 0.8; }
-    100% { height: 25px; opacity: 1; }
-}
-
-/* Ship Upgrade Styles */
-.ship {
     width: 40px;
-    height: 50px;
-    background: #fff;
-    position: absolute;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.ship-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-.ship-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-.ship-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-.ship-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile {
-    width: 4px;
-    height: 10px;
-    background: #fff;
-    position: absolute;
+    height: 40px;
+    background: radial-gradient(circle, #e74c3c, transparent);
     border-radius: 50%;
-    z-index: 75;
+    animation: explode 0.5s forwards;
+    opacity: 1;
 }
 
-.projectile-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 10px #4169e1;
+@keyframes explode {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
 }
 
-.projectile-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 15px #ffd700;
-    width: 8px;
-    height: 16px;
-}
-
-.projectile-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 20px #32cd32;
-    width: 10px;
-    height: 20px;
-}
-
-.projectile-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 25px #ff0000;
-    width: 12px;
-    height: 24px;
-}
-
-.upgrade-announcement {
-    color: #ffd700;
-    font-size: 24px;
-    text-shadow: 0 0 10px #ffd700;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* Alien Upgrades */
-.alien.faster {
-    filter: hue-rotate(120deg) brightness(1.2);
-}
-
-.alien.armored {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 50%, #95a5a6 100%);
-    box-shadow: 0 0 20px rgba(149, 165, 166, 0.8);
-}
-
-.alien.zigzag {
-    filter: hue-rotate(240deg) brightness(1.2);
-}
-
-.alien.shooter {
-    filter: hue-rotate(300deg) brightness(1.3);
-}
-
-.alien-weapon {
+.power-up {
     position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 15px;
-    background: #e74c3c;
-    border-radius: 2px;
-    box-shadow: 0 0 10px #c0392b;
-}
-
-.alien-projectile {
-    position: absolute;
-    width: 4px;
-    height: 12px;
-    background: linear-gradient(to bottom, #e74c3c, #c0392b);
-    border-radius: 2px;
-    box-shadow: 0 0 8px #e74c3c;
-    z-index: 100;
-}
-
-/* Wave Transition */
-.wave-transition {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* Ship Upgrades */
-#spaceship {
-    transition: all 0.3s ease-in-out;
-}
-
-#spaceship.wave2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-#spaceship.wave3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-#spaceship.wave4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-#spaceship.wave5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile.wave2 { background: #4169e1; box-shadow: 0 0 10px #4169e1; height: 15px; }
-.projectile.wave3 { background: #ffd700; box-shadow: 0 0 15px #ffd700; width: 8px; height: 16px; }
-.projectile.wave4 { background: #32cd32; box-shadow: 0 0 20px #32cd32; width: 10px; height: 20px; }
-.projectile.wave5 { background: #ff0000; box-shadow: 0 0 25px #ff0000; width: 12px; height: 24px; }
-
-.ship-wing {
-    position: absolute;
-    width: 15px;
-    height: 25px;
-    background: inherit;
-    transition: all 0.3s ease-in-out;
-}
-
-.ship-wing.left { left: -12px; top: 50%; transform: skew(-20deg); }
-.ship-wing.right { right: -12px; top: 50%; transform: skew(20deg); }
-
-.engine-flame {
-    position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 20px;
-    background: linear-gradient(to bottom, #f1c40f, #e67e22, transparent);
-    border-radius: 0 0 5px 5px;
-    animation: flameFlicker 0.3s infinite alternate;
-}
-
-@keyframes flameFlicker {
-    0% { height: 20px; opacity: 0.8; }
-    100% { height: 25px; opacity: 1; }
-}
-
-/* Ship Upgrade Styles */
-.ship {
-    width: 40px;
-    height: 50px;
-    background: #fff;
-    position: absolute;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.ship-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-.ship-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-.ship-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-.ship-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile {
-    width: 4px;
-    height: 10px;
-    background: #fff;
-    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle at center, #e74c3c, #c0392b);
     border-radius: 50%;
-    z-index: 75;
+    box-shadow: 0 0 20px #e74c3c;
+    animation: powerUpPulse 1s infinite alternate;
+    z-index: 800;
 }
 
-.projectile-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 10px #4169e1;
-}
-
-.projectile-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 15px #ffd700;
-    width: 8px;
-    height: 16px;
-}
-
-.projectile-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 20px #32cd32;
-    width: 10px;
-    height: 20px;
-}
-
-.projectile-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 25px #ff0000;
-    width: 12px;
-    height: 24px;
-}
-
-.upgrade-announcement {
-    color: #ffd700;
-    font-size: 24px;
-    text-shadow: 0 0 10px #ffd700;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* Alien Upgrades */
-.alien.faster {
-    filter: hue-rotate(120deg) brightness(1.2);
-}
-
-.alien.armored {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 50%, #95a5a6 100%);
-    box-shadow: 0 0 20px rgba(149, 165, 166, 0.8);
-}
-
-.alien.zigzag {
-    filter: hue-rotate(240deg) brightness(1.2);
-}
-
-.alien.shooter {
-    filter: hue-rotate(300deg) brightness(1.3);
-}
-
-.alien-weapon {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 15px;
-    background: #e74c3c;
-    border-radius: 2px;
-    box-shadow: 0 0 10px #c0392b;
-}
-
-.alien-projectile {
+.laser-beam {
     position: absolute;
     width: 4px;
-    height: 12px;
-    background: linear-gradient(to bottom, #e74c3c, #c0392b);
-    border-radius: 2px;
-    box-shadow: 0 0 8px #e74c3c;
-    z-index: 100;
-}
-
-/* Wave Transition */
-.wave-transition {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeInOut 2s ease-in-out;
+    background: linear-gradient(to bottom, 
+        rgba(231, 76, 60, 0),
+        rgba(231, 76, 60, 0.8) 10%,
+        rgba(231, 76, 60, 1) 50%,
+        rgba(231, 76, 60, 0.8) 90%,
+        rgba(231, 76, 60, 0)
+    );
+    box-shadow: 0 0 20px #e74c3c;
+    z-index: 850;
 }
 
-@keyframes fadeInOut {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
+@keyframes powerUpPulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.2); }
 }
-
-/* Ship Upgrades */
-#spaceship {
-    transition: all 0.3s ease-in-out;
-}
-
-#spaceship.wave2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-#spaceship.wave3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-#spaceship.wave4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-#spaceship.wave5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile.wave2 { background: #4169e1; box-shadow: 0 0 10px #4169e1; height: 15px; }
-.projectile.wave3 { background: #ffd700; box-shadow: 0 0 15px #ffd700; width: 8px; height: 16px; }
-.projectile.wave4 { background: #32cd32; box-shadow: 0 0 20px #32cd32; width: 10px; height: 20px; }
-.projectile.wave5 { background: #ff0000; box-shadow: 0 0 25px #ff0000; width: 12px; height: 24px; }
-
-.ship-wing {
-    position: absolute;
-    width: 15px;
-    height: 25px;
-    background: inherit;
-    transition: all 0.3s ease-in-out;
-}
-
-.ship-wing.left { left: -12px; top: 50%; transform: skew(-20deg); }
-.ship-wing.right { right: -12px; top: 50%; transform: skew(20deg); }
-
-.engine-flame {
-    position: absolute;
-    bottom: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 20px;
-    background: linear-gradient(to bottom, #f1c40f, #e67e22, transparent);
-    border-radius: 0 0 5px 5px;
-    animation: flameFlicker 0.3s infinite alternate;
-}
-
-@keyframes flameFlicker {
-    0% { height: 20px; opacity: 0.8; }
-    100% { height: 25px; opacity: 1; }
-}
-
-/* Ship Upgrade Styles */
-.ship {
-    width: 40px;
-    height: 50px;
-    background: #fff;
-    position: absolute;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.ship-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-.ship-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-.ship-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-.ship-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile {
-    width: 4px;
-    height: 10px;
-    background: #fff;
-    position: absolute;
-    border-radius: 50%;
-    z-index: 75;
-}
-
-.projectile-wave-2 {
-    background: #4169e1;
-    box-shadow: 0 0 10px #4169e1;
-}
-
-.projectile-wave-3 {
-    background: #ffd700;
-    box-shadow: 0 0 15px #ffd700;
-    width: 8px;
-    height: 16px;
-}
-
-.projectile-wave-4 {
-    background: #32cd32;
-    box-shadow: 0 0 20px #32cd32;
-    width: 10px;
-    height: 20px;
-}
-
-.projectile-wave-5 {
-    background: #ff0000;
-    box-shadow: 0 0 25px #ff0000;
-    width: 12px;
-    height: 24px;
-}
-
-.upgrade-announcement {
-    color: #ffd700;
-    font-size: 24px;
-    text-shadow: 0 0 10px #ffd700;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* Alien Upgrades */
-.alien.faster {
-    filter: hue-rotate(120deg) brightness(1.2);
-}
-
-.alien.armored {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 50%, #95a5a6 100%);
-    box-shadow: 0 0 20px rgba(149, 165, 166, 0.8);
-}
-
-.alien.zigzag {
-    filter: hue-rotate(240deg) brightness(1.2);
-}
-
-.alien.shooter {
-    filter: hue-rotate(300deg) brightness(1.3);
-}
-
-.alien-weapon {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 15px;
-    background: #e74c3c;
-    border-radius: 2px;
-    box-shadow: 0 0 10px #c0392b;
-}
-
-.alien-projectile {
-    position: absolute;
-    width: 4px;
-    height: 12px;
-    background: linear-gradient(to bottom, #e74c3c, #c0392b);
-    border-radius: 2px;
-    box-shadow: 0 0 8px #e74c3c;
-    z-index: 100;
-}
-
-/* Wave Transition */
-.wave-transition {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeInOut 2s ease-in-out;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* Ship Upgrades */
-#spaceship {
-    transition: all 0.3s ease-in-out;
-}
-
-#spaceship.wave2 {
-    background: #4169e1;
-    box-shadow: 0 0 15px #4169e1;
-}
-
-#spaceship.wave3 {
-    background: #ffd700;
-    box-shadow: 0 0 20px #ffd700;
-}
-
-#spaceship.wave4 {
-    background: #32cd32;
-    box-shadow: 0 0 25px #32cd32;
-}
-
-#spaceship.wave5 {
-    background: #ff0000;
-    box-shadow: 0 0 30px #ff0000;
-    transform: scale(1.2);
-}
-
-.projectile.wave2 { background: #4169e1; box-shadow: 0 0 10px #4169e1; height: 15px; }
-.projectile.wave3 { background: #ffd700; box-shadow: 0 0 15px #ffd700; width: 8px; height: 16px; }
-.projectile.wave4 { background: #32cd32; box-shadow: 0 0 20px #32cd32; width: 10px; height: 20px; }
-.projectile.wave5 { background: #ff0000; box-shadow: 0 0 25px #ff0000; width: 12px; height: 24px; }
-
-.ship-wing {
-    position: absolute;
-    width: 15px;
-    height: 25px;
-    background: inherit;
-    transition: all 0.3s ease-in-out;
-}
-
-.ship-wing.left { left: -12px; top: 50%; transform: skew(-20deg); }
