@@ -2,32 +2,41 @@
 const CONFIG = {
     difficulties: {
         easy: {
-            alienSpeed: 0.8,
-            spawnRate: 2500,
-            scoreMultiplier: 1,
-            projectileSpeed: 8,
-            healthLoss: 5,
-            missedAlienPenalty: 3
+            alienSpeed: 1.0,         // Increased from 0.7 to make vertical movement faster
+            spawnRate: 3000,         // Kept the same (slower spawns)
+            movementAmplitude: 30,   // Kept the same (predictable movement)
+            bossSpawnRate: 20000,    // Kept the same (more time between bosses)
+            alienShotRate: 4000,     // Kept the same (reduced shooting frequency)
+            projectileSpeed: 2,      // Kept the same (slower projectiles)
+            scoreMultiplier: 1.2,    // Kept the same (encouraging)
+            healthLoss: 3,           // Kept the same (forgiving)
+            missedAlienPenalty: 1    // Kept the same (forgiving)
         },
-        normal: {
-            alienSpeed: 1.2,
-            spawnRate: 2000,
+        medium: {
+            alienSpeed: 1.4,       // Reduced from 1.8 to be closer to easy
+            spawnRate: 1800,      // Increased from 1500 to 1800ms (slower than before)
+            movementAmplitude: 70, // Reduced from 100 to 70
+            bossSpawnRate: 13000,  // Adjusted for better progression
+            alienShotRate: 2500,   // Increased from 2000 to 2500ms (slower shooting)
+            projectileSpeed: 3.5,    // Adjusted to be between easy and hard
             scoreMultiplier: 1.5,
-            projectileSpeed: 10,
             healthLoss: 10,
             missedAlienPenalty: 5
         },
         hard: {
-            alienSpeed: 1.8,
-            spawnRate: 1500,
+            alienSpeed: 2.2,      // Reduced from 3 to 2.2
+            spawnRate: 1200,      // Increased from 1000 to 1200ms
+            movementAmplitude: 120, // Reduced from 150 to 120
+            bossSpawnRate: 11000,  // Increased from 10000 to 11000ms
+            alienShotRate: 1500,   // Increased from 1000 to 1500ms
+            projectileSpeed: 4.5,    // Reduced from 5 to 4.5
             scoreMultiplier: 2,
-            projectileSpeed: 12,
             healthLoss: 15,
             missedAlienPenalty: 8
         }
     },
     waveConfig: {
-        normalWave: { 
+        mediumWave: { 
             spawnMultiplier: 0.9,
             speedIncrease: 1.2,
             healthIncrease: 1
@@ -39,7 +48,13 @@ const CONFIG = {
         }
     },
     projectileSpeed: 10,
-    shipSpeed: 6
+    shipSpeed: 6,
+    starfield: {
+        stars: 200,
+        speed: 2,
+        maxSize: 3
+    },
+    maxAliens: 4  // Maximum number of aliens allowed on screen
 };
 
 let gameState = {
@@ -47,7 +62,7 @@ let gameState = {
     health: 100,
     level: 1,
     wave: 1,
-    difficulty: 'normal',
+    difficulty: 'medium',
     isPaused: false,
     isGameOver: false,
     lastShot: 0,
@@ -61,7 +76,10 @@ let gameState = {
     shootingPattern: null,
     isBossWave: false,
     bossesDefeated: 0,
-    difficultyLevel: 1
+    difficultyLevel: 1,
+    lastAlienSpawn: 0,
+    lastBossSpawn: 0,
+    alienProjectiles: []
 };
 
 const gameArea = document.getElementById('game-area');
@@ -72,90 +90,199 @@ let shipPosition = {
 };
 
 // Movement patterns configuration
-const MOVEMENT_PATTERNS = {
+const movementPatterns = {
     basic: {
-        zigzag: (alien, time) => {
-            alien.x += Math.sin(time * 0.1) * 5;
-            alien.y += 2;
-        },
         sideToSide: (alien, time) => {
-            alien.x += Math.sin(time * 0.05) * 8;
-            alien.y += 1.5;
+            const difficulty = CONFIG.difficulties[gameState.difficulty];
+            const amplitude = difficulty.movementAmplitude;
+            let timeScale;
+            // Adjust movement timing based on difficulty
+            if (gameState.difficulty === 'hard') {
+                timeScale = 0.0015;
+            } else if (gameState.difficulty === 'medium') {
+                timeScale = 0.0018;  // Slightly faster than easy but slower than hard
+            } else {
+                timeScale = 0.002;
+            }
+            alien.x = alien.startX + Math.sin(time * timeScale * difficulty.alienSpeed) * amplitude;
+            alien.y += difficulty.alienSpeed;
         },
-        circular: (alien, time) => {
-            alien.x += Math.cos(time * 0.05) * 6;
-            alien.y += Math.sin(time * 0.05) * 3 + 1;
+        zigzag: (alien, time) => {
+            const difficulty = CONFIG.difficulties[gameState.difficulty];
+            const amplitude = difficulty.movementAmplitude;
+            let timeScale;
+            // Adjust zigzag pattern based on difficulty
+            if (gameState.difficulty === 'hard') {
+                timeScale = 0.002;
+            } else if (gameState.difficulty === 'medium') {
+                timeScale = 0.0025;  // More predictable than hard
+            } else {
+                timeScale = 0.003;
+            }
+            alien.x = alien.startX + Math.sin(time * timeScale * difficulty.alienSpeed) * amplitude;
+            alien.y += difficulty.alienSpeed * (gameState.difficulty === 'medium' ? 1.05 : 1.1);
+        },
+        spiral: (alien, time) => {
+            const difficulty = CONFIG.difficulties[gameState.difficulty];
+            const amplitude = difficulty.movementAmplitude;
+            let timeScale;
+            // Adjust spiral pattern based on difficulty
+            if (gameState.difficulty === 'hard') {
+                timeScale = 0.003;
+            } else if (gameState.difficulty === 'medium') {
+                timeScale = 0.0035;  // More predictable than hard
+            } else {
+                timeScale = 0.004;
+            }
+            alien.x = alien.startX + Math.sin(time * timeScale * difficulty.alienSpeed) * amplitude;
+            const verticalFactor = gameState.difficulty === 'medium' ? 0.0018 : 0.0015;
+            alien.y += difficulty.alienSpeed * (1 + Math.cos(time * verticalFactor));
         }
     },
     advanced: {
         spiral: (alien, time) => {
-            const radius = 50 + Math.sin(time * 0.02) * 30;
-            alien.x += Math.cos(time * 0.1) * radius * 0.1;
-            alien.y += Math.sin(time * 0.1) * radius * 0.1 + 2;
+            alien.x += Math.cos(time * 0.02) * 0.7;
+            alien.y += 1;
         },
         figure8: (alien, time) => {
-            alien.x += Math.sin(time * 0.1) * 8;
-            alien.y += Math.cos(time * 0.05) * 4 + 2;
+            alien.x += Math.sin(time * 0.02) * 0.6;
+            alien.y += 1;
         },
         bounce: (alien, time) => {
             if (alien.x <= 0 || alien.x >= window.innerWidth - 50) {
                 alien.directionX *= -1;
             }
-            alien.x += 5 * alien.directionX;
-            alien.y += Math.sin(time * 0.1) * 3 + 2;
+            alien.x += 0.8 * alien.directionX;
+            alien.y += 1;
         }
     },
     expert: {
         swarm: (alien, time, index, totalAliens) => {
-            const angle = (index / totalAliens) * Math.PI * 2 + time * 0.05;
-            const radius = 100 + Math.sin(time * 0.02) * 50;
-            alien.x += Math.cos(angle) * radius * 0.05;
-            alien.y += Math.sin(angle) * radius * 0.05 + 1.5;
+            const angle = (index / totalAliens) * Math.PI * 2;
+            alien.x += Math.cos(angle + time * 0.01) * 0.4;
+            alien.y += 1;
         },
         chaos: (alien, time) => {
-            alien.x += Math.sin(time * 0.1) * 10 * Math.cos(time * 0.05);
-            alien.y += Math.cos(time * 0.1) * 5 + Math.sin(time * 0.05) * 3 + 2;
+            alien.x += Math.sin(time * 0.02) * 0.5;
+            alien.y += 1;
         },
         pursuit: (alien, time, _, __, playerX) => {
             const dx = playerX - alien.x;
-            alien.x += Math.sign(dx) * 3;
-            alien.y += Math.sin(time * 0.1) * 4 + 2;
+            alien.x += Math.sign(dx) * 0.5;
+            alien.y += 1;
         }
     },
     boss: {
         multiPhase: (boss, time) => {
+            const difficulty = CONFIG.difficulties[gameState.difficulty];
+            // Adjust boss movement amplitude based on difficulty
+            let amplitudeMultiplier;
+            if (gameState.difficulty === 'hard') {
+                amplitudeMultiplier = 1.8;
+            } else if (gameState.difficulty === 'medium') {
+                amplitudeMultiplier = 1.5;  // Less extreme than hard
+            } else {
+                amplitudeMultiplier = 1.2;
+            }
+            const amplitude = difficulty.movementAmplitude * amplitudeMultiplier;
+            const verticalSpeed = difficulty.alienSpeed * (gameState.difficulty === 'medium' ? 0.45 : 0.4);
+            
             switch(boss.phase) {
                 case 1:
-                    // Phase 1: Figure-8 pattern
-                    boss.x += Math.sin(time * 0.05) * 10;
-                    boss.y += Math.cos(time * 0.025) * 5 + Math.sin(time * 0.05) * 3;
+                    boss.x = boss.startX + Math.sin(time * 0.002 * difficulty.alienSpeed) * amplitude;
+                    boss.y += verticalSpeed;
                     break;
                 case 2:
-                    // Phase 2: Aggressive pursuit with spiral
-                    const angle = time * 0.1;
-                    const radius = 100 + Math.sin(time * 0.02) * 50;
-                    boss.x += Math.cos(angle) * radius * 0.08;
-                    boss.y += Math.sin(angle) * radius * 0.08;
+                    boss.x = boss.startX + Math.sin(time * 0.0025 * difficulty.alienSpeed) * amplitude;
+                    boss.y += verticalSpeed * (gameState.difficulty === 'medium' ? 1.15 : 1.1);
                     break;
                 case 3:
-                    // Phase 3: Chaos pattern with random bursts
-                    boss.x += Math.sin(time * 0.15) * 15 * Math.cos(time * 0.1);
-                    boss.y += Math.cos(time * 0.15) * 10 + Math.sin(time * 0.1) * 5;
-                    if (Math.random() < 0.02) {
-                        boss.performBurstAttack();
-                    }
+                    boss.x = boss.startX + Math.sin(time * 0.003 * difficulty.alienSpeed) * amplitude;
+                    boss.y += verticalSpeed * (gameState.difficulty === 'medium' ? 1.25 : 1.3);
                     break;
+            }
+            
+            boss.x = Math.max(50, Math.min(gameArea.offsetWidth - 50, boss.x));
+            
+            if (boss.y > gameArea.offsetHeight) {
+                const currentHealth = gameState.health;
+                const healthReduction = Math.ceil(currentHealth * 0.3);
+                updateHealth(currentHealth - healthReduction);
+                
+                boss.y = -50;
+                boss.startX = Math.random() * (gameArea.offsetWidth - 100) + 50;
             }
         },
         teleport: (boss, time) => {
-            if (time % 120 === 0) {
-                boss.x = Math.random() * (window.innerWidth - 100);
-                boss.y = Math.random() * (window.innerHeight / 2);
-                boss.performAreaAttack();
+            if (time % 180 === 0 && Math.random() < 0.3) {
+                const minX = 50;
+                const maxX = gameArea.offsetWidth - 50;
+                boss.startX = minX + Math.random() * (maxX - minX);
+                boss.y = -50;
             }
         }
     }
 };
+
+// Star class for background animation
+class Star {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * this.canvas.width;
+        this.y = Math.random() * this.canvas.height;
+        this.size = Math.random() * CONFIG.starfield.maxSize;
+        this.speed = (Math.random() + 0.5) * CONFIG.starfield.speed;
+    }
+
+    update() {
+        this.y += this.speed;
+        if (this.y > this.canvas.height) {
+            this.reset();
+            this.y = 0;
+        }
+    }
+
+    draw() {
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+}
+
+// Starfield management
+let stars = [];
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+
+function initStarfield() {
+    // Set canvas size
+    canvas.width = gameArea.offsetWidth;
+    canvas.height = gameArea.offsetHeight;
+
+    // Create stars
+    stars = [];
+    for (let i = 0; i < CONFIG.starfield.stars; i++) {
+        stars.push(new Star(canvas));
+    }
+}
+
+function updateStarfield() {
+    // Clear canvas
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Update and draw stars
+    stars.forEach(star => {
+        star.update();
+        star.draw();
+    });
+}
 
 // Update alien movement based on wave progression
 function updateAlienMovement(alien, time) {
@@ -167,6 +294,32 @@ function updateAlienMovement(alien, time) {
     } else {
         const pattern = patterns[alien.patternIndex % patterns.length];
         pattern(alien, time, alien.index, gameState.aliens.length, shipPosition.x);
+        
+        // Keep aliens within screen bounds
+        if (alien.x < 0) alien.x = 0;
+        if (alien.x > window.innerWidth - 50) alien.x = window.innerWidth - 50;
+        
+        // Remove aliens that are off screen
+        if (alien.y > gameArea.offsetHeight) {
+            // Calculate health reduction based on wave type (boss or normal)
+            const isBossWave = Math.floor((gameState.wave - 1) / 3) === Math.floor(gameState.wave / 3);
+            const healthReductionPercent = isBossWave ? 20 : 5;
+            const healthReduction = Math.ceil(gameState.health * (healthReductionPercent / 100));
+            
+            // Remove the alien from the DOM and the game state
+            alien.element.remove();
+            const index = gameState.aliens.indexOf(alien);
+            if (index > -1) {
+                gameState.aliens.splice(index, 1);
+            }
+            
+            // Update health
+            updateHealth(Math.max(0, gameState.health - healthReduction));
+            
+            if (gameState.health <= 0) {
+                gameOver();
+            }
+        }
     }
 }
 
@@ -174,16 +327,16 @@ function getPatternsByDifficulty(waveLevel) {
     const patterns = [];
     
     // Basic patterns (always available)
-    patterns.push(...Object.values(MOVEMENT_PATTERNS.basic));
+    patterns.push(...Object.values(movementPatterns.basic));
     
     // Advanced patterns (after first boss)
     if (waveLevel >= 1) {
-        patterns.push(...Object.values(MOVEMENT_PATTERNS.advanced));
+        patterns.push(...Object.values(movementPatterns.advanced));
     }
     
     // Expert patterns (after second boss)
     if (waveLevel >= 2) {
-        patterns.push(...Object.values(MOVEMENT_PATTERNS.expert));
+        patterns.push(...Object.values(movementPatterns.expert));
     }
     
     return patterns;
@@ -194,61 +347,73 @@ function updateBossMovement(boss, time) {
     const healthPercent = boss.health / boss.maxHealth;
     if (healthPercent <= 0.66 && boss.phase === 1) {
         boss.phase = 2;
-        boss.speed *= 1.3;
-    } else if (healthPercent <= 0.33 && boss.phase === 3) {
+        boss.speed *= 1.2;
+    } else if (healthPercent <= 0.33 && boss.phase === 2) {
         boss.phase = 3;
-        boss.speed *= 1.5;
+        boss.speed *= 1.3;
     }
 
     // Apply boss movement pattern
-    MOVEMENT_PATTERNS.boss.multiPhase(boss, time);
+    movementPatterns.boss.multiPhase(boss, time);
     
     // Add teleport ability in later phases
-    if (boss.phase >= 2) {
-        MOVEMENT_PATTERNS.boss.teleport(boss, time);
+    if (boss.phase >= 2 && boss.health > 0) {
+        movementPatterns.boss.teleport(boss, time);
+    }
+    
+    // Update boss health bar
+    const healthBar = boss.element.querySelector('.boss-health-bar');
+    if (healthBar) {
+        const healthPercent = (boss.health / boss.maxHealth) * 100;
+        healthBar.style.width = healthPercent + '%';
     }
 }
 
 // Enhanced alien creation with pattern assignment
 function createAlien(isBoss = false) {
     const alien = document.createElement('div');
-    alien.className = isBoss ? 'alien boss' : 'alien';
+    alien.className = isBoss ? 'alien boss-alien' : 'alien';
+    
+    // Add wave-specific class
+    if (!isBoss) {
+        const waveClass = `alien-wave-${((gameState.wave - 1) % 4) + 1}`;
+        alien.classList.add(waveClass);
+    }
+    
+    // Set initial position
+    let x, y;
+    if (isBoss) {
+        x = Math.random() * (gameArea.offsetWidth - 100) + 50;
+        y = -50;
+    } else {
+        x = Math.random() * (gameArea.offsetWidth - 50);
+        y = -50;
+    }
     
     const alienObj = {
         element: alien,
-        x: Math.random() * (window.innerWidth - 50),
-        y: -50,
-        health: isBoss ? 100 : 10,
+        x: x,
+        y: y,
+        startX: x,
+        health: isBoss ? 2 : 1, // Boss now takes 2 hits to destroy
         isBoss: isBoss,
         phase: 1,
-        speed: isBoss ? 2 : 3,
+        speed: isBoss ? 2 : CONFIG.difficulties[gameState.difficulty].alienSpeed,
         directionX: Math.random() < 0.5 ? -1 : 1,
         patternIndex: Math.floor(Math.random() * getPatternsByDifficulty(Math.floor(gameState.wave / 3)).length),
         index: gameState.aliens.length,
-        lastShot: 0,
-        performBurstAttack: function() {
-            // Implement burst attack logic
-            for (let i = 0; i < 8; i++) {
-                setTimeout(() => {
-                    const angle = (i / 8) * Math.PI * 2;
-                    createAlienProjectile(this.x, this.y, angle);
-                }, i * 100);
-            }
-        },
-        performAreaAttack: function() {
-            // Implement area attack logic
-            for (let i = 0; i < 12; i++) {
-                const angle = (i / 12) * Math.PI * 2;
-                createAlienProjectile(this.x, this.y, angle);
-            }
-        }
+        lastShot: 0
     };
 
     if (isBoss) {
         alienObj.maxHealth = alienObj.health;
-        alienObj.element.innerHTML = '<div class="boss-health-bar"></div>';
+        const healthBar = document.createElement('div');
+        healthBar.className = 'boss-health-bar';
+        alien.appendChild(healthBar);
     }
 
+    alien.style.left = x + 'px';
+    alien.style.top = y + 'px';
     gameArea.appendChild(alien);
     gameState.aliens.push(alienObj);
     
@@ -257,206 +422,72 @@ function createAlien(isBoss = false) {
 
 // Update the game loop to use the new movement system
 function updateAliens(time) {
-    gameState.aliens.forEach((alien, index) => {
-        updateAlienMovement(alien, time);
+    const aliens = gameState.aliens;
+    const gameAreaRect = gameArea.getBoundingClientRect();
+    
+    for (let i = aliens.length - 1; i >= 0; i--) {
+        const alien = aliens[i];
         
-        // Update alien element position
+        // Update position
+        if (alien.isBoss) {
+            updateBossMovement(alien, time);
+        } else {
+            updateAlienMovement(alien, time);
+        }
+        
+        // Update visual position
         alien.element.style.left = alien.x + 'px';
         alien.element.style.top = alien.y + 'px';
-        
-        // Update boss health bar if applicable
-        if (alien.isBoss) {
-            const healthBar = alien.element.querySelector('.boss-health-bar');
-            const healthPercent = (alien.health / alien.maxHealth) * 100;
-            healthBar.style.width = healthPercent + '%';
-        }
-        
-        // Remove aliens that are off screen
-        if (alien.y > window.innerHeight) {
-            alien.element.remove();
-            gameState.aliens.splice(index, 1);
-        }
-    });
-}
-
-// Initialize game
-function initGame(difficulty) {
-    // Clear existing aliens and projectiles
-    gameState.aliens.forEach(alien => alien.element.remove());
-    gameState.projectiles.forEach(projectile => projectile.element.remove());
-    
-    gameState.difficulty = difficulty;
-    gameState.score = 0;
-    gameState.health = 100;
-    gameState.level = 1;
-    gameState.wave = 1;
-    gameState.isPaused = false;
-    gameState.isGameOver = false;
-    gameState.aliens = [];
-    gameState.projectiles = [];
-    gameState.powerUps = [];
-    gameState.activePowerUps = {};
-    gameState.powerUpSpawned = false;
-    gameState.difficultyLevel = 1;
-
-    // Update UI
-    updateScore(0);
-    updateHealth(100);
-    updateLevel(1);
-
-    // Hide screens
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-over-screen').classList.add('hidden');
-    
-    // Position ship
-    shipPosition = {
-        x: gameArea.offsetWidth / 2 - 20,
-        y: gameArea.offsetHeight - 80
-    };
-    ship.style.left = shipPosition.x + 'px';
-    ship.style.bottom = '20px';
-
-    // Show initial wave notification
-    const notification = document.createElement('div');
-    notification.className = 'wave-notification';
-    notification.textContent = "WAVE 1";
-    gameArea.appendChild(notification);
-    
-    // Remove notification after 3 seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-
-    // Start game loop and alien spawning
-    gameLoop();
-    startAlienSpawning();
-    
-    gameState.shootingPattern = getShootingPattern(1);
-    gameState.lastShot = 0;
-    
-    // Initialize ship with wave 1 appearance
-    ship.className = 'player-ship ship-wave-1';
-}
-
-// Shooting mechanism
-function shoot() {
-    const now = Date.now();
-    const pattern = gameState.shootingPattern;
-    
-    if (now - gameState.lastShot >= pattern.cooldown) {
-        const shipRect = ship.getBoundingClientRect();
-        const baseX = shipPosition.x + ship.offsetWidth / 2 - 2;
-        const baseY = shipRect.top;
-        
-        pattern.projectiles.forEach(offset => {
-            createProjectile(baseX, baseY, offset);
-        });
-        
-        gameState.lastShot = now;
     }
 }
 
-// Move projectiles
-function moveProjectiles() {
-    gameState.projectiles.forEach((projectile, index) => {
-        projectile.position.y -= CONFIG.projectileSpeed;
-        projectile.element.style.top = projectile.position.y + 'px';
-        
-        // Remove projectiles that are off screen
-        if (projectile.position.y < 0) {
-            projectile.element.remove();
-            gameState.projectiles.splice(index, 1);
-        }
-    });
+function spawnAliens() {
+    if (gameState.isPaused || gameState.isGameOver) return;
+    
+    const difficulty = CONFIG.difficulties[gameState.difficulty];
+    const currentTime = Date.now();
+    
+    // Regular alien spawning - only if below max limit
+    if (currentTime - gameState.lastAlienSpawn > difficulty.spawnRate && 
+        gameState.aliens.filter(alien => !alien.isBoss).length < CONFIG.maxAliens) {
+        createAlien(false);
+        gameState.lastAlienSpawn = currentTime;
+    }
+    
+    // Boss spawning
+    if (currentTime - gameState.lastBossSpawn > difficulty.bossSpawnRate && 
+        gameState.wave % 5 === 0) {  // Spawn boss every 5 waves
+        createAlien(true);
+        gameState.lastBossSpawn = currentTime;
+    }
 }
 
-// Move aliens
-function moveAliens() {
-    updateAliens(Date.now());
-}
-
-// Ship movement
-function moveShip(direction) {
-    const speed = CONFIG.shipSpeed * (gameState.activePowerUps.speedBoost ? 1.5 : 1);
+function alienShoot(alien) {
+    if (gameState.isPaused || gameState.isGameOver) return;
     
-    // Remove previous movement classes
-    ship.classList.remove('moving-left', 'moving-right');
+    const difficulty = CONFIG.difficulties[gameState.difficulty];
+    const currentTime = Date.now();
     
-    if (direction === 'left') {
-        shipPosition.x = Math.max(0, shipPosition.x - speed);
-        ship.classList.add('moving-left');
-    } else if (direction === 'right') {
-        shipPosition.x = Math.min(gameArea.offsetWidth - 50, shipPosition.x + speed);
-        ship.classList.add('moving-right');
-    }
-    
-    ship.style.left = shipPosition.x + 'px';
-}
-
-// Track pressed keys
-const keys = {
-    ArrowLeft: false,
-    ArrowRight: false
-};
-
-// Event listeners for controls
-document.addEventListener('keydown', (e) => {
-    if (gameState.isGameOver) return;
-    
-    switch(e.key) {
-        case 'ArrowLeft':
-            keys.ArrowLeft = true;
-            break;
-        case 'ArrowRight':
-            keys.ArrowRight = true;
-            break;
-        case ' ':
-            shoot();
-            e.preventDefault(); // Prevent page scrolling
-            break;
-        case 'p':
-        case 'P':
-            togglePause();
-            break;
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    switch(e.key) {
-        case 'ArrowLeft':
-            keys.ArrowLeft = false;
-            break;
-        case 'ArrowRight':
-            keys.ArrowRight = false;
-            break;
-    }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        ship.classList.remove('moving-left', 'moving-right');
-    }
-});
-
-// Game loop
-function gameLoop() {
-    if (!gameState.isPaused && !gameState.isGameOver) {
-        // Handle continuous movement
-        if (keys.ArrowLeft) moveShip('left');
-        if (keys.ArrowRight) moveShip('right');
+    // Check if enough time has passed since last shot
+    if (currentTime - alien.lastShot > difficulty.alienShotRate) {
+        const projectile = document.createElement('div');
+        projectile.className = 'alien-projectile';
         
-        moveProjectiles();
-        moveAliens();
-        checkCollisions();
-        checkPowerUpCollisions();
-        checkLaserCollisions();
+        const projectileObj = {
+            element: projectile,
+            x: alien.x + 25,  // Center of alien
+            y: alien.y + 50,  // Bottom of alien
+            speed: difficulty.projectileSpeed
+        };
         
-        // Update laser position if active
-        if (gameState.activePowerUps.laser) {
-            gameState.activePowerUps.laser.element.style.left = (shipPosition.x + 23) + 'px';
-        }
+        projectile.style.left = projectileObj.x + 'px';
+        projectile.style.top = projectileObj.y + 'px';
         
-        // Update difficulty level
-        gameState.difficultyLevel = 1 + (Math.floor(gameState.wave / 3) * 0.5) + (gameState.bossesDefeated * 0.3);
+        gameArea.appendChild(projectile);
+        gameState.alienProjectiles.push(projectileObj);
+        
+        alien.lastShot = currentTime;
     }
-    requestAnimationFrame(gameLoop);
 }
 
 function createAlienProjectile(x, y, angle) {
@@ -493,8 +524,7 @@ function createProjectile(baseX, baseY, offset = { x: 0, y: 0 }) {
     const x = baseX + offset.x;
     const y = baseY + offset.y;
     
-    projectile.style.left = x + 'px';
-    projectile.style.top = y + 'px';
+    projectile.style.transform = `translate(${x}px, ${y}px)`;
     
     gameArea.appendChild(projectile);
     
@@ -511,17 +541,13 @@ function startAlienSpawning() {
     }
     
     const isBossWave = gameState.wave > 0 && gameState.wave % 3 === 0;
-    const waveConfig = isBossWave ? CONFIG.waveConfig.bossWave : CONFIG.waveConfig.normalWave;
+    const waveConfig = isBossWave ? CONFIG.waveConfig.bossWave : CONFIG.waveConfig.mediumWave;
     const baseSpawnRate = CONFIG.difficulties[gameState.difficulty].spawnRate;
     const spawnRate = baseSpawnRate * waveConfig.spawnMultiplier;
     
     gameState.spawnInterval = setInterval(() => {
         if (!gameState.isPaused && !gameState.isGameOver) {
-            if (isBossWave) {
-                createAlien(true);
-            } else {
-                createAlien();
-            }
+            spawnAliens();
         }
     }, spawnRate);
 }
@@ -541,8 +567,20 @@ function checkCollisions() {
                 projectile.element.remove();
                 projectiles.splice(i, 1);
                 
-                // Reduce alien health or remove if dead
+                // Reduce alien health
                 alien.health--;
+                
+                // Create hit effect
+                const hitEffect = document.createElement('div');
+                hitEffect.className = 'hit-effect';
+                hitEffect.style.left = alien.x + 'px';
+                hitEffect.style.top = alien.y + 'px';
+                gameArea.appendChild(hitEffect);
+                
+                // Remove hit effect after animation
+                setTimeout(() => {
+                    hitEffect.remove();
+                }, 200);
                 
                 if (alien.health <= 0) {
                     // Create explosion effect
@@ -563,22 +601,22 @@ function checkCollisions() {
                     const scoreIncrease = alien.isBoss ? 50 : 10;
                     updateScore(gameState.score + scoreIncrease);
                     
+                    // Spawn new alien immediately if not a boss and below max limit
+                    if (!alien.isBoss && gameState.aliens.filter(a => !a.isBoss).length < CONFIG.maxAliens) {
+                        createAlien(false);
+                    }
+                    
                     // Remove explosion after animation
                     setTimeout(() => {
                         explosion.remove();
                     }, 500);
-                    
-                    if (alien.isBoss) {
-                        gameState.bossesDefeated++;
+                } else if (alien.isBoss) {
+                    // Update boss health bar
+                    const healthPercent = (alien.health / alien.maxHealth) * 100;
+                    const healthBar = alien.element.querySelector('.boss-health-bar');
+                    if (healthBar) {
+                        healthBar.style.width = healthPercent + '%';
                     }
-                } else {
-                    // Show hit effect
-                    alien.element.classList.add('hit');
-                    setTimeout(() => {
-                        if (alien.element) {
-                            alien.element.classList.remove('hit');
-                        }
-                    }, 100);
                 }
                 
                 break;
@@ -791,6 +829,190 @@ document.querySelectorAll('.difficulty-btn').forEach(button => {
             initGame(difficulty);
         }
     });
+});
+
+// Initialize game
+function initGame(difficulty) {
+    // Clear existing aliens and projectiles
+    gameState.aliens.forEach(alien => alien.element.remove());
+    gameState.projectiles.forEach(projectile => projectile.element.remove());
+    
+    gameState.difficulty = difficulty;
+    gameState.score = 0;
+    gameState.health = 100;
+    gameState.level = 1;
+    gameState.wave = 1;
+    gameState.isPaused = false;
+    gameState.isGameOver = false;
+    gameState.aliens = [];
+    gameState.projectiles = [];
+    gameState.powerUps = [];
+    gameState.activePowerUps = {};
+    gameState.powerUpSpawned = false;
+    gameState.difficultyLevel = 1;
+
+    // Update UI
+    updateScore(0);
+    updateHealth(100);
+    updateLevel(1);
+
+    // Hide screens
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    
+    // Position ship
+    shipPosition = {
+        x: gameArea.offsetWidth / 2 - 20,
+        y: gameArea.offsetHeight - 80
+    };
+    ship.style.left = shipPosition.x + 'px';
+    ship.style.bottom = '20px';
+
+    // Show initial wave notification
+    const notification = document.createElement('div');
+    notification.className = 'wave-notification';
+    notification.textContent = "WAVE 1";
+    gameArea.appendChild(notification);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+
+    // Start game loop and alien spawning
+    gameLoop();
+    startAlienSpawning();
+    
+    gameState.shootingPattern = getShootingPattern(1);
+    gameState.lastShot = 0;
+    
+    // Initialize ship with wave 1 appearance
+    ship.className = 'player-ship ship-wave-1';
+    
+    initStarfield();
+}
+
+// Game loop
+function gameLoop() {
+    if (!gameState.isPaused && !gameState.isGameOver) {
+        updateStarfield();
+        // Handle continuous movement
+        if (keys.ArrowLeft) moveShip('left');
+        if (keys.ArrowRight) moveShip('right');
+        
+        moveProjectiles();
+        updateAliens(Date.now());
+        checkCollisions();
+        checkPowerUpCollisions();
+        checkLaserCollisions();
+        
+        // Update laser position if active
+        if (gameState.activePowerUps.laser) {
+            gameState.activePowerUps.laser.element.style.left = (shipPosition.x + 23) + 'px';
+        }
+        
+        // Update difficulty level
+        gameState.difficultyLevel = 1 + (Math.floor(gameState.wave / 3) * 0.5) + (gameState.bossesDefeated * 0.3);
+        
+        // Update alien shooting
+        for (let i = gameState.aliens.length - 1; i >= 0; i--) {
+            const alien = gameState.aliens[i];
+            alienShoot(alien);
+        }
+    }
+    requestAnimationFrame(gameLoop);
+}
+
+// Shooting mechanism
+function shoot() {
+    const now = Date.now();
+    const pattern = gameState.shootingPattern;
+    
+    if (now - gameState.lastShot >= pattern.cooldown) {
+        const shipRect = ship.getBoundingClientRect();
+        const baseX = shipPosition.x + ship.offsetWidth / 2 - 2;
+        const baseY = shipRect.top;
+        
+        pattern.projectiles.forEach(offset => {
+            createProjectile(baseX, baseY, offset);
+        });
+        
+        gameState.lastShot = now;
+    }
+}
+
+// Move projectiles
+function moveProjectiles() {
+    gameState.projectiles.forEach((projectile, index) => {
+        projectile.position.y -= CONFIG.projectileSpeed;
+        projectile.element.style.transform = `translate(${projectile.position.x}px, ${projectile.position.y}px)`;
+        
+        // Remove projectiles that are off screen
+        if (projectile.position.y < 0) {
+            projectile.element.remove();
+            gameState.projectiles.splice(index, 1);
+        }
+    });
+}
+
+// Ship movement
+function moveShip(direction) {
+    const speed = CONFIG.shipSpeed * (gameState.activePowerUps.speedBoost ? 1.5 : 1);
+    
+    // Remove previous movement classes
+    ship.classList.remove('moving-left', 'moving-right');
+    
+    if (direction === 'left') {
+        shipPosition.x = Math.max(0, shipPosition.x - speed);
+        ship.classList.add('moving-left');
+    } else if (direction === 'right') {
+        shipPosition.x = Math.min(gameArea.offsetWidth - 50, shipPosition.x + speed);
+        ship.classList.add('moving-right');
+    }
+    
+    ship.style.left = shipPosition.x + 'px';
+}
+
+// Track pressed keys
+const keys = {
+    ArrowLeft: false,
+    ArrowRight: false
+};
+
+// Event listeners for controls
+document.addEventListener('keydown', (e) => {
+    if (gameState.isGameOver) return;
+    
+    switch(e.key) {
+        case 'ArrowLeft':
+            keys.ArrowLeft = true;
+            break;
+        case 'ArrowRight':
+            keys.ArrowRight = true;
+            break;
+        case ' ':
+            shoot();
+            e.preventDefault(); // Prevent page scrolling
+            break;
+        case 'p':
+        case 'P':
+            togglePause();
+            break;
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    switch(e.key) {
+        case 'ArrowLeft':
+            keys.ArrowLeft = false;
+            break;
+        case 'ArrowRight':
+            keys.ArrowRight = false;
+            break;
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        ship.classList.remove('moving-left', 'moving-right');
+    }
 });
 
 gameLoop();
