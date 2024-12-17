@@ -941,28 +941,28 @@ function returnToMainMenu() {
         }
     });
     gameState.aliens = [];
-    
+
     gameState.projectiles.forEach(projectile => {
         if (projectile.element && projectile.element.parentNode) {
             projectile.element.parentNode.removeChild(projectile.element);
         }
     });
     gameState.projectiles = [];
-    
+
     // Clear health bubble if exists
     if (gameState.healthBubble && gameState.healthBubble.element) {
         gameState.healthBubble.element.parentNode.removeChild(gameState.healthBubble.element);
         gameState.healthBubble = null;
     }
-    
+
     // Hide game over screen if visible
     const gameOverScreen = document.getElementById('game-over-screen');
     gameOverScreen.classList.add('hidden');
-    
+
     // Show start screen
     const startScreen = document.getElementById('start-screen');
     startScreen.classList.remove('hidden');
-    
+
     // Reset score and health
     updateScore(0);
     updateHealth(100);
@@ -1214,5 +1214,55 @@ function initGame(difficulty) {
     // Start game loop
     gameLoop();
 }
+
+// Mobile Controls
+const leftBtn = document.getElementById('left-btn');
+const rightBtn = document.getElementById('right-btn');
+const shootBtn = document.getElementById('shoot-btn');
+
+// Touch control variables
+let isTouchingLeft = false;
+let isTouchingRight = false;
+
+// Touch event listeners
+if (leftBtn && rightBtn && shootBtn) {
+    // Left button
+    leftBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isTouchingLeft = true;
+        keys.ArrowLeft = true;
+    });
+    leftBtn.addEventListener('touchend', () => {
+        isTouchingLeft = false;
+        keys.ArrowLeft = false;
+    });
+
+    // Right button
+    rightBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isTouchingRight = true;
+        keys.ArrowRight = true;
+    });
+    rightBtn.addEventListener('touchend', () => {
+        isTouchingRight = false;
+        keys.ArrowRight = false;
+    });
+
+    // Shoot button
+    shootBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.Space = true;
+    });
+    shootBtn.addEventListener('touchend', () => {
+        keys.Space = false;
+    });
+}
+
+// Prevent default touch behavior to avoid scrolling
+document.addEventListener('touchmove', (e) => {
+    if (e.target.closest('#mobile-controls')) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 gameLoop();
