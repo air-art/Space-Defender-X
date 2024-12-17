@@ -2752,3 +2752,96 @@ button:hover {
         100% { transform: scale(0.8) translateY(0); }
     }
 }
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    /* Shoot button styling */
+    #shoot-btn {
+        position: absolute;
+        right: 20px;
+        bottom: 12px;
+        width: 85px;
+        height: 85px;
+        font-size: 15px;
+        font-weight: bold;
+        background: rgba(255, 56, 96, 0.2);
+        border: 3px solid var(--secondary-color);
+        box-shadow: 0 0 15px rgba(255, 56, 96, 0.4);
+        color: var(--secondary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        text-align: center;
+        text-shadow: 0 0 8px var(--secondary-color);
+    }
+
+    /* Start screen and difficulty buttons */
+    #start-screen {
+        padding: 25px 20px;
+        background: linear-gradient(to bottom, rgba(0, 0, 40, 0.95), rgba(0, 0, 60, 0.95));
+        border-radius: 20px;
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+    }
+
+    .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 85%;
+        max-width: 300px;
+        margin: 20px auto;
+    }
+
+    .difficulty-btn {
+        width: 100%;
+        padding: 18px 20px;
+        font-size: 1.2em;
+        border-radius: 15px;
+        background: rgba(0, 255, 255, 0.1);
+        border: 2.5px solid;
+        text-shadow: 0 0 5px currentColor;
+        transition: all 0.3s ease;
+    }
+
+    .difficulty-btn[data-difficulty="easy"] {
+        border-color: #4CAF50;
+        color: #4CAF50;
+        background: rgba(76, 175, 80, 0.1);
+    }
+
+    .difficulty-btn[data-difficulty="medium"] {
+        border-color: #FFC107;
+        color: #FFC107;
+        background: rgba(255, 193, 7, 0.1);
+    }
+
+    .difficulty-btn[data-difficulty="hard"] {
+        border-color: #FF5722;
+        color: #FF5722;
+        background: rgba(255, 87, 34, 0.1);
+    }
+
+    .difficulty-btn:active {
+        transform: scale(0.98);
+        box-shadow: 0 0 20px currentColor;
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Small screen adjustments */
+@media (max-width: 360px) {
+    #shoot-btn {
+        width: 75px;
+        height: 75px;
+        font-size: 13px;
+    }
+
+    .difficulty-btn {
+        padding: 15px;
+        font-size: 1.1em;
+    }
+}
