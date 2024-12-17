@@ -7,6 +7,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .health-bubble {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #7fffd4, #20b2aa);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 10px #7fffd4;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
 </head>
 <body>
     <div id="game-container">

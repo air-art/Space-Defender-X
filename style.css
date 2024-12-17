@@ -990,7 +990,7 @@ body {
     border-radius: 50%;
     background: radial-gradient(circle at center, #FFD700, #FFA500);
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-    animation: power-up-float 2s ease-in-out infinite;
+    animation: power-up-float 2s infinite alternate;
 }
 
 @keyframes power-up-float {
@@ -1723,18 +1723,100 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    #hud {
-        flex-direction: column;
-        align-items: flex-start;
+    .game-title {
+        font-size: 1.8em;
     }
 
-    .shop-items {
-        grid-template-columns: 1fr;
+    .game-stats {
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    #combo-display {
+    .game-stats > div {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+
+    #game-area {
+        height: calc(100vh - 300px);
+        margin: 10px;
+    }
+
+    .controls-info {
+        display: none;
+    }
+
+    .mobile-controls {
+        display: block;
+    }
+
+    #game-container {
+        padding: 10px;
+    }
+
+    .screen h2 {
         font-size: 1.5em;
     }
+
+    .instructions {
+        display: none;
+    }
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: var(--ui-background);
+    z-index: 1000;
+}
+
+.mobile-controls .shoot-btn {
+    position: absolute;
+    left: 30px;
+    bottom: 20px;
+    width: 60px;
+    height: 60px;
+    background: var(--warning-color);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.mobile-controls .direction-controls {
+    position: absolute;
+    right: 30px;
+    bottom: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.mobile-controls .arrow-btn {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 10px;
+    color: var(--background-color);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.mobile-controls button:active {
+    opacity: 1;
+    transform: scale(0.95);
 }
 
 .game-title {

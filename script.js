@@ -13,7 +13,7 @@ const CONFIG = {
             missedAlienPenalty: 1    // Kept the same (forgiving)
         },
         medium: {
-            alienSpeed: 1.4,       // Reduced from 1.8 to be closer to easy
+            alienSpeed: 1.1,       // Reduced from 1.4 to make aliens slower
             spawnRate: 1800,      // Increased from 1500 to 1800ms (slower than before)
             movementAmplitude: 70, // Reduced from 100 to 70
             bossSpawnRate: 13000,  // Adjusted for better progression
@@ -24,7 +24,7 @@ const CONFIG = {
             missedAlienPenalty: 5
         },
         hard: {
-            alienSpeed: 2.2,      // Reduced from 3 to 2.2
+            alienSpeed: 1.6,      // Reduced from 2.2 to make aliens slower
             spawnRate: 1200,      // Increased from 1000 to 1200ms
             movementAmplitude: 120, // Reduced from 150 to 120
             bossSpawnRate: 11000,  // Increased from 10000 to 11000ms
@@ -66,7 +66,7 @@ let gameState = {
     isPaused: false,
     isGameOver: false,
     lastShot: 0,
-    shootingCooldown: 250, // Time between shots in milliseconds
+    shootingCooldown: 150, // Reduced from 250 to make shooting faster
     aliens: [],
     projectiles: [],
     powerUps: [],
@@ -79,7 +79,9 @@ let gameState = {
     difficultyLevel: 1,
     lastAlienSpawn: 0,
     lastBossSpawn: 0,
-    alienProjectiles: []
+    alienProjectiles: [],
+    healthBubble: null,
+    lastHealthBubbleSpawn: 0
 };
 
 const gameArea = document.getElementById('game-area');
@@ -462,96 +464,6 @@ function spawnAliens() {
     }
 }
 
-function alienShoot(alien) {
-    if (gameState.isPaused || gameState.isGameOver) return;
-    
-    const difficulty = CONFIG.difficulties[gameState.difficulty];
-    const currentTime = Date.now();
-    
-    // Check if enough time has passed since last shot
-    if (currentTime - alien.lastShot > difficulty.alienShotRate) {
-        const projectile = document.createElement('div');
-        projectile.className = 'alien-projectile';
-        
-        const projectileObj = {
-            element: projectile,
-            x: alien.x + 25,  // Center of alien
-            y: alien.y + 50,  // Bottom of alien
-            speed: difficulty.projectileSpeed
-        };
-        
-        projectile.style.left = projectileObj.x + 'px';
-        projectile.style.top = projectileObj.y + 'px';
-        
-        gameArea.appendChild(projectile);
-        gameState.alienProjectiles.push(projectileObj);
-        
-        alien.lastShot = currentTime;
-    }
-}
-
-function createAlienProjectile(x, y, angle) {
-    const projectile = document.createElement('div');
-    projectile.className = 'alien-projectile';
-    projectile.style.left = x + 'px';
-    projectile.style.top = y + 'px';
-    gameArea.appendChild(projectile);
-    
-    const velocityX = Math.cos(angle) * 5;
-    const velocityY = Math.sin(angle) * 5;
-    
-    function updateProjectile() {
-        projectile.style.left = (x += velocityX) + 'px';
-        projectile.style.top = (y += velocityY) + 'px';
-        
-        if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) {
-            projectile.remove();
-        } else {
-            requestAnimationFrame(updateProjectile);
-        }
-    }
-    
-    updateProjectile();
-}
-
-function createProjectile(baseX, baseY, offset = { x: 0, y: 0 }) {
-    const projectile = document.createElement('div');
-    projectile.className = 'projectile';
-    
-    // Add wave-specific projectile styling
-    projectile.classList.add('projectile-wave-' + ((gameState.wave - 1) % 4 + 1));
-    
-    const x = baseX + offset.x;
-    const y = baseY + offset.y;
-    
-    projectile.style.transform = `translate(${x}px, ${y}px)`;
-    
-    gameArea.appendChild(projectile);
-    
-    gameState.projectiles.push({
-        element: projectile,
-        position: { x, y }
-    });
-}
-
-function startAlienSpawning() {
-    // Clear any existing spawn interval
-    if (gameState.spawnInterval) {
-        clearInterval(gameState.spawnInterval);
-    }
-    
-    const isBossWave = gameState.wave > 0 && gameState.wave % 3 === 0;
-    const waveConfig = isBossWave ? CONFIG.waveConfig.bossWave : CONFIG.waveConfig.mediumWave;
-    const baseSpawnRate = CONFIG.difficulties[gameState.difficulty].spawnRate;
-    const spawnRate = baseSpawnRate * waveConfig.spawnMultiplier;
-    
-    gameState.spawnInterval = setInterval(() => {
-        if (!gameState.isPaused && !gameState.isGameOver) {
-            spawnAliens();
-        }
-    }, spawnRate);
-}
-
 function checkCollisions() {
     const projectiles = gameState.projectiles;
     const aliens = gameState.aliens;
@@ -619,6 +531,24 @@ function checkCollisions() {
                     }
                 }
                 
+                break;
+            }
+        }
+    }
+    
+    // Check health bubble collisions
+    if (gameState.healthBubble) {
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+            const projectile = projectiles[i];
+            if (isColliding(projectile, gameState.healthBubble)) {
+                // Remove projectile
+                gameArea.removeChild(projectile.element);
+                projectiles.splice(i, 1);
+                
+                // Remove health bubble and restore health
+                gameArea.removeChild(gameState.healthBubble.element);
+                gameState.healthBubble = null;
+                updateHealth(100);
                 break;
             }
         }
@@ -818,93 +748,365 @@ function activateLaser() {
     }, 10000);
 }
 
-// Initialize difficulty buttons
-document.querySelectorAll('.difficulty-btn').forEach(button => {
-    button.addEventListener('click', () => {
-        if (button.id === 'restart-btn') {
-            document.getElementById('game-over-screen').classList.add('hidden');
-            initGame(gameState.difficulty);
-        } else {
-            const difficulty = button.getAttribute('data-difficulty');
-            initGame(difficulty);
-        }
-    });
-});
-
-// Initialize game
-function initGame(difficulty) {
-    // Clear existing aliens and projectiles
-    gameState.aliens.forEach(alien => alien.element.remove());
-    gameState.projectiles.forEach(projectile => projectile.element.remove());
+// Create health bubble
+function createHealthBubble() {
+    if (gameState.healthBubble || gameState.health >= 40) return;
     
-    gameState.difficulty = difficulty;
+    const bubble = document.createElement('div');
+    bubble.className = 'health-bubble';
+    bubble.style.position = 'absolute';
+    bubble.style.left = Math.random() * (gameArea.offsetWidth - 30) + 'px';
+    bubble.style.top = '0px';
+    gameArea.appendChild(bubble);
+    
+    gameState.healthBubble = {
+        element: bubble,
+        x: parseFloat(bubble.style.left),
+        y: 0,
+        speed: 0.8,
+        width: 30,
+        height: 30
+    };
+}
+
+// Update health bubble movement
+function updateHealthBubble() {
+    if (!gameState.healthBubble) {
+        if (gameState.health < 40 && Date.now() - gameState.lastHealthBubbleSpawn > 5000) {
+            createHealthBubble();
+            gameState.lastHealthBubbleSpawn = Date.now();
+        }
+        return;
+    }
+
+    gameState.healthBubble.y += gameState.healthBubble.speed;
+    gameState.healthBubble.element.style.top = gameState.healthBubble.y + 'px';
+
+    // Remove if it goes off screen
+    if (gameState.healthBubble.y > gameArea.offsetHeight) {
+        gameArea.removeChild(gameState.healthBubble.element);
+        gameState.healthBubble = null;
+    }
+}
+
+// Function to reset game state
+function resetGame() {
+    // Reset game state values
     gameState.score = 0;
     gameState.health = 100;
     gameState.level = 1;
     gameState.wave = 1;
     gameState.isPaused = false;
     gameState.isGameOver = false;
+    gameState.lastShot = 0;
+    gameState.powerUpSpawned = false;
+    gameState.isBossWave = false;
+    gameState.bossesDefeated = 0;
+    gameState.difficultyLevel = 1;
+    gameState.lastAlienSpawn = 0;
+    gameState.lastBossSpawn = 0;
+    gameState.lastHealthBubbleSpawn = 0;
+
+    // Clear all existing game elements
+    gameState.aliens.forEach(alien => {
+        if (alien.element && alien.element.parentNode) {
+            alien.element.parentNode.removeChild(alien.element);
+        }
+    });
     gameState.aliens = [];
+
+    gameState.projectiles.forEach(projectile => {
+        if (projectile.element && projectile.element.parentNode) {
+            projectile.element.parentNode.removeChild(projectile.element);
+        }
+    });
     gameState.projectiles = [];
+
+    gameState.alienProjectiles.forEach(projectile => {
+        if (projectile.element && projectile.element.parentNode) {
+            projectile.element.parentNode.removeChild(projectile.element);
+        }
+    });
+    gameState.alienProjectiles = [];
+
+    if (gameState.healthBubble && gameState.healthBubble.element) {
+        gameState.healthBubble.element.parentNode.removeChild(gameState.healthBubble.element);
+        gameState.healthBubble = null;
+    }
+
+    // Reset power-ups
     gameState.powerUps = [];
     gameState.activePowerUps = {};
-    gameState.powerUpSpawned = false;
-    gameState.difficultyLevel = 1;
 
-    // Update UI
-    updateScore(0);
-    updateHealth(100);
-    updateLevel(1);
-
-    // Hide screens
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('game-over-screen').classList.add('hidden');
-    
-    // Position ship
+    // Reset ship position
     shipPosition = {
         x: gameArea.offsetWidth / 2 - 20,
         y: gameArea.offsetHeight - 80
     };
     ship.style.left = shipPosition.x + 'px';
-    ship.style.bottom = '20px';
 
-    // Show initial wave notification
-    const notification = document.createElement('div');
-    notification.className = 'wave-notification';
-    notification.textContent = "WAVE 1";
-    gameArea.appendChild(notification);
-    
-    // Remove notification after 3 seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    // Reset UI
+    updateScore(0);
+    updateHealth(100);
+    updateLevel(1);
 
-    // Start game loop and alien spawning
-    gameLoop();
+    // Hide game over screen
+    const gameOverScreen = document.getElementById('game-over-screen');
+    gameOverScreen.classList.add('hidden');
+
+    // Reset spawn interval
+    if (gameState.spawnInterval) {
+        clearInterval(gameState.spawnInterval);
+    }
     startAlienSpawning();
+}
+
+// Initialize difficulty buttons
+document.querySelectorAll('.difficulty-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        if (button.id === 'restart-btn') {
+            resetGame();
+            return;
+        }
+        const difficulty = button.dataset.difficulty;
+        if (difficulty) {
+            initGame(difficulty);
+        }
+    });
+});
+
+// Mobile Controls
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+let touchControls = {
+    left: false,
+    right: false,
+    shoot: false
+};
+
+if (isMobile) {
+    const shootBtn = document.querySelector('.shoot-btn');
+    const leftBtn = document.querySelector('#left-btn');
+    const rightBtn = document.querySelector('#right-btn');
+
+    // Touch events for shoot button
+    shootBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchControls.shoot = true;
+    });
+    shootBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        touchControls.shoot = false;
+    });
+
+    // Touch events for left button
+    leftBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchControls.left = true;
+    });
+    leftBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        touchControls.left = false;
+    });
+
+    // Touch events for right button
+    rightBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchControls.right = true;
+    });
+    rightBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        touchControls.right = false;
+    });
+}
+
+// Track pressed keys
+const keys = {
+    ArrowLeft: false,
+    ArrowRight: false,
+    " ": false,
+    "p": false,
+    "Escape": false
+};
+
+// Function to return to main menu
+function returnToMainMenu() {
+    // Reset game state
+    gameState.isGameOver = true;
+    gameState.isPaused = false;
     
-    gameState.shootingPattern = getShootingPattern(1);
-    gameState.lastShot = 0;
+    // Clear all aliens and projectiles
+    gameState.aliens.forEach(alien => {
+        if (alien.element && alien.element.parentNode) {
+            alien.element.parentNode.removeChild(alien.element);
+        }
+    });
+    gameState.aliens = [];
     
-    // Initialize ship with wave 1 appearance
-    ship.className = 'player-ship ship-wave-1';
+    gameState.projectiles.forEach(projectile => {
+        if (projectile.element && projectile.element.parentNode) {
+            projectile.element.parentNode.removeChild(projectile.element);
+        }
+    });
+    gameState.projectiles = [];
     
-    initStarfield();
+    // Clear health bubble if exists
+    if (gameState.healthBubble && gameState.healthBubble.element) {
+        gameState.healthBubble.element.parentNode.removeChild(gameState.healthBubble.element);
+        gameState.healthBubble = null;
+    }
+    
+    // Hide game over screen if visible
+    const gameOverScreen = document.getElementById('game-over-screen');
+    gameOverScreen.classList.add('hidden');
+    
+    // Show start screen
+    const startScreen = document.getElementById('start-screen');
+    startScreen.classList.remove('hidden');
+    
+    // Reset score and health
+    updateScore(0);
+    updateHealth(100);
+    updateLevel(1);
+}
+
+// Add event listener for keydown
+document.addEventListener('keydown', (e) => {
+    if (e.key in keys) {
+        keys[e.key] = true;
+        if (e.key === "Escape" && !gameState.isPaused) {
+            returnToMainMenu();
+        }
+    }
+});
+
+// Event listeners for controls
+document.addEventListener('keyup', (e) => {
+    switch(e.key) {
+        case 'ArrowLeft':
+            keys.ArrowLeft = false;
+            break;
+        case 'ArrowRight':
+            keys.ArrowRight = false;
+            break;
+        case ' ':
+            keys[" "] = false;
+            break;
+        case 'p':
+        case 'P':
+            togglePause();
+            break;
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        ship.classList.remove('moving-left', 'moving-right');
+    }
+});
+
+function alienShoot(alien) {
+    if (gameState.isPaused || gameState.isGameOver) return;
+    
+    const difficulty = CONFIG.difficulties[gameState.difficulty];
+    const currentTime = Date.now();
+    
+    // Check if enough time has passed since last shot
+    if (currentTime - alien.lastShot > difficulty.alienShotRate) {
+        const projectile = document.createElement('div');
+        projectile.className = 'alien-projectile';
+        
+        const projectileObj = {
+            element: projectile,
+            x: alien.x + 25,  // Center of alien
+            y: alien.y + 50,  // Bottom of alien
+            speed: difficulty.projectileSpeed
+        };
+        
+        projectile.style.left = projectileObj.x + 'px';
+        projectile.style.top = projectileObj.y + 'px';
+        
+        gameArea.appendChild(projectile);
+        gameState.alienProjectiles.push(projectileObj);
+        
+        alien.lastShot = currentTime;
+    }
+}
+
+function createAlienProjectile(x, y, angle) {
+    const projectile = document.createElement('div');
+    projectile.className = 'alien-projectile';
+    projectile.style.left = x + 'px';
+    projectile.style.top = y + 'px';
+    gameArea.appendChild(projectile);
+    
+    const velocityX = Math.cos(angle) * 5;
+    const velocityY = Math.sin(angle) * 5;
+    
+    function updateProjectile() {
+        projectile.style.left = (x += velocityX) + 'px';
+        projectile.style.top = (y += velocityY) + 'px';
+        
+        if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) {
+            projectile.remove();
+        } else {
+            requestAnimationFrame(updateProjectile);
+        }
+    }
+    
+    updateProjectile();
+}
+
+function createProjectile(baseX, baseY, offset = { x: 0, y: 0 }) {
+    const projectile = document.createElement('div');
+    projectile.className = 'projectile';
+    
+    // Add wave-specific projectile styling
+    projectile.classList.add('projectile-wave-' + ((gameState.wave - 1) % 4 + 1));
+    
+    const x = baseX + offset.x;
+    const y = baseY + offset.y;
+    
+    projectile.style.transform = `translate(${x}px, ${y}px)`;
+    
+    gameArea.appendChild(projectile);
+    
+    gameState.projectiles.push({
+        element: projectile,
+        position: { x, y }
+    });
+}
+
+function startAlienSpawning() {
+    // Clear any existing spawn interval
+    if (gameState.spawnInterval) {
+        clearInterval(gameState.spawnInterval);
+    }
+    
+    const isBossWave = gameState.wave > 0 && gameState.wave % 3 === 0;
+    const waveConfig = isBossWave ? CONFIG.waveConfig.bossWave : CONFIG.waveConfig.mediumWave;
+    const baseSpawnRate = CONFIG.difficulties[gameState.difficulty].spawnRate;
+    const spawnRate = baseSpawnRate * waveConfig.spawnMultiplier;
+    
+    gameState.spawnInterval = setInterval(() => {
+        if (!gameState.isPaused && !gameState.isGameOver) {
+            spawnAliens();
+        }
+    }, spawnRate);
 }
 
 // Game loop
 function gameLoop() {
     if (!gameState.isPaused && !gameState.isGameOver) {
         updateStarfield();
-        // Handle continuous movement
-        if (keys.ArrowLeft) moveShip('left');
-        if (keys.ArrowRight) moveShip('right');
+        // Handle continuous movement and shooting
+        if (keys.ArrowLeft || touchControls.left) moveShip('left');
+        if (keys.ArrowRight || touchControls.right) moveShip('right');
+        if (keys[" "] || touchControls.shoot) shoot();
         
         moveProjectiles();
         updateAliens(Date.now());
+        spawnAliens();
         checkCollisions();
         checkPowerUpCollisions();
         checkLaserCollisions();
+        updateHealthBubble();
         
         // Update laser position if active
         if (gameState.activePowerUps.laser) {
@@ -928,16 +1130,25 @@ function shoot() {
     const now = Date.now();
     const pattern = gameState.shootingPattern;
     
-    if (now - gameState.lastShot >= pattern.cooldown) {
-        const shipRect = ship.getBoundingClientRect();
-        const baseX = shipPosition.x + ship.offsetWidth / 2 - 2;
-        const baseY = shipRect.top;
-        
-        pattern.projectiles.forEach(offset => {
-            createProjectile(baseX, baseY, offset);
-        });
-        
+    // Check if enough time has passed since last shot
+    if (now - gameState.lastShot >= gameState.shootingCooldown) {
         gameState.lastShot = now;
+        
+        // Create projectile based on current shooting pattern
+        if (pattern && pattern.type === 'spread') {
+            for (let i = 0; i < pattern.count; i++) {
+                const angle = (pattern.count === 1) ? 0 : 
+                    (-pattern.spread / 2) + (i * (pattern.spread / (pattern.count - 1)));
+                const offset = {
+                    x: Math.sin(angle * Math.PI / 180) * 20,
+                    y: -Math.cos(angle * Math.PI / 180) * 20
+                };
+                createProjectile(shipPosition.x + 20, shipPosition.y, offset);
+            }
+        } else {
+            // Default single shot
+            createProjectile(shipPosition.x + 20, shipPosition.y);
+        }
     }
 }
 
@@ -973,46 +1184,35 @@ function moveShip(direction) {
     ship.style.left = shipPosition.x + 'px';
 }
 
-// Track pressed keys
-const keys = {
-    ArrowLeft: false,
-    ArrowRight: false
-};
-
-// Event listeners for controls
-document.addEventListener('keydown', (e) => {
-    if (gameState.isGameOver) return;
+// Initialize game
+function initGame(difficulty) {
+    // Set the difficulty
+    gameState.difficulty = difficulty;
     
-    switch(e.key) {
-        case 'ArrowLeft':
-            keys.ArrowLeft = true;
-            break;
-        case 'ArrowRight':
-            keys.ArrowRight = true;
-            break;
-        case ' ':
-            shoot();
-            e.preventDefault(); // Prevent page scrolling
-            break;
-        case 'p':
-        case 'P':
-            togglePause();
-            break;
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    switch(e.key) {
-        case 'ArrowLeft':
-            keys.ArrowLeft = false;
-            break;
-        case 'ArrowRight':
-            keys.ArrowRight = false;
-            break;
-    }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        ship.classList.remove('moving-left', 'moving-right');
-    }
-});
+    // Reset all game state and clear elements
+    resetGame();
+    
+    // Hide start screen
+    document.getElementById('start-screen').classList.add('hidden');
+    
+    // Show initial wave notification
+    const notification = document.createElement('div');
+    notification.className = 'wave-notification';
+    notification.textContent = "WAVE 1";
+    gameArea.appendChild(notification);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+    
+    // Initialize game components
+    gameState.shootingPattern = getShootingPattern(1);
+    ship.className = 'player-ship ship-wave-1';
+    initStarfield();
+    
+    // Start game loop
+    gameLoop();
+}
 
 gameLoop();
