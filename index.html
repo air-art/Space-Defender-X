@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Space Defender X</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -92,12 +92,6 @@
                 <button id="restart-btn">Play Again</button>
             </div>
         </div>
-        
-        <div id="mobile-controls">
-            <button id="mobile-left" class="mobile-btn">←</button>
-            <button id="mobile-shoot" class="mobile-btn">SHOOT</button>
-            <button id="mobile-right" class="mobile-btn">→</button>
-        </div>
 
         <div class="controls-info">
             <div class="control-item">
@@ -113,6 +107,15 @@
                 <span class="key">P</span>
                 <span class="desc">Pause</span>
             </div>
+        </div>
+        
+        <!-- Add mobile controls -->
+        <div id="mobile-controls" class="mobile-only">
+            <div class="direction-buttons">
+                <button id="left-btn" class="control-btn">←</button>
+                <button id="right-btn" class="control-btn">→</button>
+            </div>
+            <button id="shoot-btn" class="control-btn">SHOOT</button>
         </div>
     </div>
     <script src="script.js"></script>
