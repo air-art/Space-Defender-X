@@ -2528,3 +2528,155 @@ button:hover {
         font-size: 0.9em;
     }
 }
+
+/* Enhanced Mobile Controls and Responsive Design */
+@media (max-width: 768px) {
+    /* Game container adjustments */
+    #game-container {
+        padding: 10px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .game-title {
+        font-size: 1.8em;
+        margin: 10px 0;
+    }
+
+    /* Game stats adjustments */
+    .game-stats {
+        flex-wrap: wrap;
+        padding: 8px;
+        gap: 5px;
+        margin: 5px 0;
+    }
+
+    .game-stats > div {
+        flex: 1 1 40%;
+        padding: 5px;
+        font-size: 0.8em;
+    }
+
+    .stat-label {
+        font-size: 0.7em;
+    }
+
+    /* Game area adjustments */
+    #game-area {
+        flex: 1;
+        height: auto;
+        min-height: 60vh;
+        margin-bottom: 120px; /* Space for controls */
+    }
+
+    /* Mobile controls styling */
+    #mobile-controls {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 20, 0.8);
+        backdrop-filter: blur(10px);
+        padding: 15px;
+        height: 110px;
+        border-top: 2px solid var(--primary-color);
+        box-shadow: 0 -5px 15px rgba(0, 255, 255, 0.2);
+    }
+
+    .direction-buttons {
+        position: absolute;
+        left: 20px;
+        bottom: 15px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .control-btn {
+        padding: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 255, 255, 0.15);
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+
+    #shoot-btn {
+        position: absolute;
+        right: 20px;
+        bottom: 15px;
+        width: 80px;
+        height: 80px;
+        font-size: 16px;
+        background: rgba(255, 56, 96, 0.15);
+        border: 2px solid var(--secondary-color);
+        box-shadow: 0 0 10px rgba(255, 56, 96, 0.3);
+    }
+
+    .control-btn:active {
+        transform: scale(0.9);
+        box-shadow: 0 0 20px var(--primary-color);
+    }
+
+    #shoot-btn:active {
+        transform: scale(0.9);
+        box-shadow: 0 0 20px var(--secondary-color);
+    }
+
+    /* Hide keyboard controls info on mobile */
+    .controls-info {
+        display: none;
+    }
+
+    /* Adjust spaceship size for mobile */
+    #spaceship {
+        transform: scale(0.8);
+    }
+
+    /* Adjust screens for mobile */
+    .screen {
+        padding: 20px;
+    }
+
+    .screen h2 {
+        font-size: 1.5em;
+    }
+
+    .screen p {
+        font-size: 0.9em;
+    }
+
+    .difficulty-btn {
+        padding: 10px 20px;
+        font-size: 0.9em;
+    }
+}
+
+/* Additional adjustments for very small screens */
+@media (max-width: 360px) {
+    .game-title {
+        font-size: 1.5em;
+    }
+
+    .game-stats > div {
+        font-size: 0.7em;
+    }
+
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    #shoot-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 14px;
+    }
+}
