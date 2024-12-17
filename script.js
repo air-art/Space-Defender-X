@@ -2,47 +2,47 @@
 const CONFIG = {
     difficulties: {
         easy: {
-            alienSpeed: 1.0,         // Increased from 0.7 to make vertical movement faster
-            spawnRate: 3000,         // Kept the same (slower spawns)
-            movementAmplitude: 30,   // Kept the same (predictable movement)
-            bossSpawnRate: 20000,    // Kept the same (more time between bosses)
-            alienShotRate: 4000,     // Kept the same (reduced shooting frequency)
-            projectileSpeed: 2,      // Kept the same (slower projectiles)
-            scoreMultiplier: 1.2,    // Kept the same (encouraging)
-            healthLoss: 3,           // Kept the same (forgiving)
-            missedAlienPenalty: 1    // Kept the same (forgiving)
+            alienSpeed: 1.0,
+            spawnRate: 3000,
+            movementAmplitude: 30,
+            bossSpawnRate: 20000,
+            alienShotRate: 4000,
+            projectileSpeed: 2,
+            scoreMultiplier: 1.2,
+            healthLoss: 3,
+            missedAlienPenalty: 1
         },
         medium: {
-            alienSpeed: 1.1,       // Reduced from 1.4 to make aliens slower
-            spawnRate: 1800,      // Increased from 1500 to 1800ms (slower than before)
-            movementAmplitude: 70, // Reduced from 100 to 70
-            bossSpawnRate: 13000,  // Adjusted for better progression
-            alienShotRate: 2500,   // Increased from 2000 to 2500ms (slower shooting)
-            projectileSpeed: 3.5,    // Adjusted to be between easy and hard
+            alienSpeed: 1.1,
+            spawnRate: 1800,
+            movementAmplitude: 70,
+            bossSpawnRate: 13000,
+            alienShotRate: 2500,
+            projectileSpeed: 3.5,
             scoreMultiplier: 1.5,
             healthLoss: 10,
             missedAlienPenalty: 5
         },
         hard: {
-            alienSpeed: 1.6,      // Reduced from 2.2 to make aliens slower
-            spawnRate: 1200,      // Increased from 1000 to 1200ms
-            movementAmplitude: 120, // Reduced from 150 to 120
-            bossSpawnRate: 11000,  // Increased from 10000 to 11000ms
-            alienShotRate: 1500,   // Increased from 1000 to 1500ms
-            projectileSpeed: 4.5,    // Reduced from 5 to 4.5
+            alienSpeed: 1.6,
+            spawnRate: 1200,
+            movementAmplitude: 120,
+            bossSpawnRate: 11000,
+            alienShotRate: 1500,
+            projectileSpeed: 4.5,
             scoreMultiplier: 2,
             healthLoss: 15,
             missedAlienPenalty: 8
         }
     },
     waveConfig: {
-        mediumWave: { 
+        mediumWave: {
             spawnMultiplier: 0.9,
             speedIncrease: 1.2,
             healthIncrease: 1
         },
-        bossWave: { 
-            spawnMultiplier: 0.5, 
+        bossWave: {
+            spawnMultiplier: 0.5,
             alienHealth: 3,
             speedIncrease: 1.5
         }
@@ -54,7 +54,7 @@ const CONFIG = {
         speed: 2,
         maxSize: 3
     },
-    maxAliens: 4  // Maximum number of aliens allowed on screen
+    maxAliens: 4
 };
 
 let gameState = {
@@ -66,7 +66,7 @@ let gameState = {
     isPaused: false,
     isGameOver: false,
     lastShot: 0,
-    shootingCooldown: 150, // Reduced from 250 to make shooting faster
+    shootingCooldown: 150,
     aliens: [],
     projectiles: [],
     powerUps: [],
@@ -378,18 +378,19 @@ function createAlien(isBoss = false) {
     
     // Add wave-specific class
     if (!isBoss) {
-        const waveClass = `alien-wave-${((gameState.wave - 1) % 4) + 1}`;
+        const waveClass = `alien-wave-${((gameState.wave - 1) % 3) + 1}`;
         alien.classList.add(waveClass);
     }
     
     // Set initial position
+    const gameAreaRect = gameArea.getBoundingClientRect();
     let x, y;
     if (isBoss) {
-        x = Math.random() * (gameArea.offsetWidth - 100) + 50;
-        y = -50;
+        x = Math.random() * (gameAreaRect.width - 80);
+        y = -80;
     } else {
-        x = Math.random() * (gameArea.offsetWidth - 50);
-        y = -50;
+        x = Math.random() * (gameAreaRect.width - 40);
+        y = -40;
     }
     
     const alienObj = {
@@ -397,10 +398,10 @@ function createAlien(isBoss = false) {
         x: x,
         y: y,
         startX: x,
-        health: isBoss ? 2 : 1, // Boss now takes 2 hits to destroy
+        health: isBoss ? 3 : 1,
         isBoss: isBoss,
         phase: 1,
-        speed: isBoss ? 2 : CONFIG.difficulties[gameState.difficulty].alienSpeed,
+        speed: isBoss ? 1.5 : CONFIG.difficulties[gameState.difficulty].alienSpeed,
         directionX: Math.random() < 0.5 ? -1 : 1,
         patternIndex: Math.floor(Math.random() * getPatternsByDifficulty(Math.floor(gameState.wave / 3)).length),
         index: gameState.aliens.length,
@@ -414,8 +415,10 @@ function createAlien(isBoss = false) {
         alien.appendChild(healthBar);
     }
 
+    alien.style.position = 'absolute';
     alien.style.left = x + 'px';
     alien.style.top = y + 'px';
+    alien.style.zIndex = '100';
     gameArea.appendChild(alien);
     gameState.aliens.push(alienObj);
     
@@ -437,9 +440,23 @@ function updateAliens(time) {
             updateAlienMovement(alien, time);
         }
         
+        // Remove aliens that are off screen
+        if (alien.y > gameAreaRect.height + 50) {
+            alien.element.remove();
+            aliens.splice(i, 1);
+            if (!gameState.isGameOver) {
+                updateHealth(gameState.health - CONFIG.difficulties[gameState.difficulty].missedAlienPenalty);
+            }
+            continue;
+        }
+        
         // Update visual position
         alien.element.style.left = alien.x + 'px';
         alien.element.style.top = alien.y + 'px';
+        
+        // Ensure alien is visible
+        alien.element.style.display = 'block';
+        alien.element.style.visibility = 'visible';
     }
 }
 
@@ -448,17 +465,21 @@ function spawnAliens() {
     
     const difficulty = CONFIG.difficulties[gameState.difficulty];
     const currentTime = Date.now();
+    const gameAreaRect = gameArea.getBoundingClientRect();
     
-    // Regular alien spawning - only if below max limit
-    if (currentTime - gameState.lastAlienSpawn > difficulty.spawnRate && 
-        gameState.aliens.filter(alien => !alien.isBoss).length < CONFIG.maxAliens) {
+    // Only spawn if we have room on screen
+    if (gameState.aliens.length >= CONFIG.maxAliens) return;
+    
+    // Regular alien spawning
+    if (currentTime - gameState.lastAlienSpawn > difficulty.spawnRate) {
         createAlien(false);
         gameState.lastAlienSpawn = currentTime;
     }
     
     // Boss spawning
     if (currentTime - gameState.lastBossSpawn > difficulty.bossSpawnRate && 
-        gameState.wave % 5 === 0) {  // Spawn boss every 5 waves
+        gameState.wave > 0 && gameState.wave % 5 === 0 && 
+        !gameState.aliens.some(alien => alien.isBoss)) {
         createAlien(true);
         gameState.lastBossSpawn = currentTime;
     }
@@ -1183,6 +1204,36 @@ function moveShip(direction) {
     
     ship.style.left = shipPosition.x + 'px';
 }
+
+// Prevent default touch behaviors
+document.addEventListener('touchstart', function(e) {
+    if (e.target.closest('#mobile-controls')) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+document.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+}, { passive: false });
+
+// Update canvas size on resize
+function resizeCanvas() {
+    const canvas = document.getElementById('starfield');
+    const gameArea = document.getElementById('game-area');
+    if (canvas && gameArea) {
+        canvas.width = gameArea.clientWidth;
+        canvas.height = gameArea.clientHeight;
+    }
+}
+
+// Add resize listener
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', function() {
+    setTimeout(resizeCanvas, 100);
+});
+
+// Initial resize
+document.addEventListener('DOMContentLoaded', resizeCanvas);
 
 // Initialize game
 function initGame(difficulty) {
